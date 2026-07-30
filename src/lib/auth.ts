@@ -1,5 +1,9 @@
 import jwt from 'jsonwebtoken'
 
+if (!process.env.JWT_SECRET && process.env.NODE_ENV === 'production') {
+  throw new Error('JWT_SECRET must be set in production')
+}
+
 const JWT_SECRET = process.env.JWT_SECRET ?? 'dev-secret-do-not-use-in-prod'
 export const SESSION_COOKIE = 'elenchus_session'
 
