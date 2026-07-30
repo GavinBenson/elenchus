@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { db } from '@/lib/db'
 import { hasPermission } from '@/lib/permissions'
-import { ApiError, errorResponse } from '@/lib/errors'
+import { ApiError, errorResponse, toErrorResponse } from '@/lib/errors'
 import { parseOrThrow } from '@/lib/validation'
 
 function getAuthContext(request: Request) {
@@ -28,7 +28,6 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const applicant = await db.applicant.update({ where: { id }, data: { stage: body.stage } })
     return Response.json(applicant)
   } catch (e) {
-    if (e instanceof ApiError) return errorResponse(e)
-    throw e
+    return toErrorResponse(e)
   }
 }
