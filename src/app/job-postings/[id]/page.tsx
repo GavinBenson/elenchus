@@ -25,7 +25,7 @@ export default async function JobPostingDetailPage({ params }: { params: Promise
               .filter((a) => a.stage === stage)
               .map((a) => (
                 <div key={a.id} data-testid={`applicant-card-${a.id}`}>
-                  {a.name}
+                  <a href={`/applicants/${a.id}`}>{a.name}</a>
                 </div>
               ))}
           </div>
