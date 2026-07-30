@@ -13,7 +13,7 @@ const PERMISSION_KEYS = [
   'manage_roles',
 ]
 
-async function main() {
+export async function runSeed() {
   await db.userPermissionOverride.deleteMany()
   await db.applicant.deleteMany()
   await db.jobPosting.deleteMany()
@@ -107,9 +107,11 @@ async function main() {
   })
 }
 
-main()
-  .catch((e) => {
-    console.error(e)
-    process.exit(1)
-  })
-  .finally(() => db.$disconnect())
+if (require.main === module) {
+  runSeed()
+    .catch((e) => {
+      console.error(e)
+      process.exit(1)
+    })
+    .finally(() => db.$disconnect())
+}
