@@ -60,7 +60,10 @@ elenchus/
         roles/route.ts
         permissions/route.ts
         test/reset/route.ts
-    middleware.ts            # attaches user+permissions to request context
+    proxy.ts                 # attaches user+permissions to request context
+                              # (Next.js 16 renamed middleware.ts -> proxy.ts;
+                              # Task 5 built this as src/proxy.ts, see its
+                              # task notes for verification detail)
   openapi.yaml
   docs/... (already exists)
 ```
@@ -1011,6 +1014,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return errorResponse(new ApiError(403, 'forbidden', 'Missing edit_employees permission'))
     }
     const { id } = await params
+    const existing = await db.employee.findUnique({ where: { id } })
+    if (!existing) return errorResponse(new ApiError(404, 'not_found', 'Employee not found'))
     const body = parseOrThrow(UpdateEmployeeSchema, await request.json())
     const employee = await db.employee.update({ where: { id }, data: body })
     return Response.json(employee)
@@ -1027,15 +1032,24 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     return errorResponse(new ApiError(403, 'forbidden', 'Missing edit_employees permission'))
   }
   const { id } = await params
+  const existing = await db.employee.findUnique({ where: { id } })
+  if (!existing) return errorResponse(new ApiError(404, 'not_found', 'Employee not found'))
   await db.employee.delete({ where: { id } })
   return Response.json({ ok: true })
 }
 ```
 
+> **Note (added after Task 6 review):** without the `findUnique` existence check
+> above, Prisma throws on `update`/`delete` against a nonexistent id, which
+> leaks an uncaught 500 instead of the required 404. This was found as a bug
+> in Task 6's implementation and fixed there; the code above is already
+> corrected. Apply the same existence-check pattern in Tasks 7 and 8's
+> PATCH/DELETE handlers.
+
 - [ ] **Step 6: Run test to verify it passes**
 
 Run: `npm test -- employees`
-Expected: PASS (2 tests).
+Expected: PASS (3 tests, including a 404-on-missing-id case).
 
 - [ ] **Step 7: Commit**
 
@@ -1171,6 +1185,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return errorResponse(new ApiError(403, 'forbidden', 'Missing edit_job_postings permission'))
     }
     const { id } = await params
+    const existing = await db.jobPosting.findUnique({ where: { id } })
+    if (!existing) return errorResponse(new ApiError(404, 'not_found', 'Job posting not found'))
     const body = parseOrThrow(UpdateJobPostingSchema, await request.json())
     const posting = await db.jobPosting.update({ where: { id }, data: body })
     return Response.json(posting)
@@ -1187,6 +1203,8 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     return errorResponse(new ApiError(403, 'forbidden', 'Missing edit_job_postings permission'))
   }
   const { id } = await params
+  const existing = await db.jobPosting.findUnique({ where: { id } })
+  if (!existing) return errorResponse(new ApiError(404, 'not_found', 'Job posting not found'))
   await db.jobPosting.delete({ where: { id } })
   return Response.json({ ok: true })
 }
@@ -1323,6 +1341,8 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     return errorResponse(new ApiError(403, 'forbidden', 'Missing delete_applicant permission'))
   }
   const { id } = await params
+  const existing = await db.applicant.findUnique({ where: { id } })
+  if (!existing) return errorResponse(new ApiError(404, 'not_found', 'Applicant not found'))
   await db.applicant.delete({ where: { id } })
   return Response.json({ ok: true })
 }
@@ -1357,6 +1377,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return errorResponse(new ApiError(403, 'forbidden', 'Missing delete_applicant permission'))
     }
     const { id } = await params
+    const existing = await db.applicant.findUnique({ where: { id } })
+    if (!existing) return errorResponse(new ApiError(404, 'not_found', 'Applicant not found'))
     const body = parseOrThrow(StageSchema, await request.json())
     const applicant = await db.applicant.update({ where: { id }, data: { stage: body.stage } })
     return Response.json(applicant)
