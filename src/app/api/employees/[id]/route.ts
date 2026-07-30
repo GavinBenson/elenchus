@@ -35,6 +35,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return errorResponse(new ApiError(403, 'forbidden', 'Missing edit_employees permission'))
     }
     const { id } = await params
+    const existing = await db.employee.findUnique({ where: { id } })
+    if (!existing) return errorResponse(new ApiError(404, 'not_found', 'Employee not found'))
     const body = parseOrThrow(UpdateEmployeeSchema, await request.json())
     const employee = await db.employee.update({ where: { id }, data: body })
     return Response.json(employee)
@@ -51,6 +53,8 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     return errorResponse(new ApiError(403, 'forbidden', 'Missing edit_employees permission'))
   }
   const { id } = await params
+  const existing = await db.employee.findUnique({ where: { id } })
+  if (!existing) return errorResponse(new ApiError(404, 'not_found', 'Employee not found'))
   await db.employee.delete({ where: { id } })
   return Response.json({ ok: true })
 }
