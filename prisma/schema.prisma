@@ -11,3 +11,85 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model Role {
+  id          String           @id @default(cuid())
+  name        String           @unique
+  users       User[]
+  permissions RolePermission[]
+}
+
+model Permission {
+  id       String           @id @default(cuid())
+  key      String           @unique
+  roles    RolePermission[]
+  overrides UserPermissionOverride[]
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id])
+  permission   Permission @relation(fields: [permissionId], references: [id])
+
+  @@id([roleId, permissionId])
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  roleId       String
+  role         Role     @relation(fields: [roleId], references: [id])
+  employee     Employee?
+  overrides    UserPermissionOverride[]
+  jobPostings  JobPosting[]
+  createdAt    DateTime @default(now())
+}
+
+model UserPermissionOverride {
+  id           String     @id @default(cuid())
+  userId       String
+  permissionId String
+  granted      Boolean
+  user         User       @relation(fields: [userId], references: [id])
+  permission   Permission @relation(fields: [permissionId], references: [id])
+
+  @@unique([userId, permissionId])
+}
+
+model Employee {
+  id         String     @id @default(cuid())
+  userId     String?    @unique
+  user       User?      @relation(fields: [userId], references: [id])
+  name       String
+  department String
+  title      String
+  hireDate   DateTime
+  status     String     @default("active") // active | terminated
+  managerId  String?
+  manager    Employee?  @relation("EmployeeManager", fields: [managerId], references: [id])
+  reports    Employee[] @relation("EmployeeManager")
+}
+
+model JobPosting {
+  id         String      @id @default(cuid())
+  title      String
+  department String
+  status     String      @default("open") // open | closed
+  createdById String
+  createdBy  User        @relation(fields: [createdById], references: [id])
+  createdAt  DateTime    @default(now())
+  applicants Applicant[]
+}
+
+model Applicant {
+  id           String     @id @default(cuid())
+  jobPostingId String
+  jobPosting   JobPosting @relation(fields: [jobPostingId], references: [id])
+  name         String
+  email        String
+  resumeUrl    String?
+  stage        String     @default("applied") // applied | interview | offer | hired | rejected
+  appliedAt    DateTime   @default(now())
+}
