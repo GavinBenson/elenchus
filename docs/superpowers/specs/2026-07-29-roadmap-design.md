@@ -51,6 +51,22 @@ AI features are additive and deliberately deferred — they don't need to shape
 the core architecture of Epics 1-4, and bolting them on later proves the core
 suite stands on its own merit first.
 
+### Epic 6 — ATS-Quality UI Polish (added 2026-07-29, after Epic 1 shipped)
+Epic 1 deliberately shipped a minimal/functional UI (the app was the test
+target, not the showcase). Once logged in, the current UI reads as
+obviously bare-bones ("dashboard shows raw counts", plain lists) — not the
+visual bar needed for the portfolio narrative "I built a demo ATS using my
+extensive expertise from working for a SaaS ATS." This epic makes Elenchus
+look and feel like a real, polished ATS product: proper navigation/layout,
+realistic data density, forms with real validation UX, a genuinely
+convincing dashboard, etc. — while preserving every existing `data-testid`
+Epic 2 depends on (test IDs are a contract, not decoration).
+
+Sequencing note: do this epic before or in parallel with Epic 2
+(Playwright), not strictly after — reworking visual structure post-hoc
+risks needing to relocate `data-testid`s twice. Not yet brainstormed/
+speced; needs its own design pass before implementation.
+
 ## Ticket/PBI Structure
 
 Each epic breaks into individual tickets, tracked in `docs/roadmap/backlog.md`

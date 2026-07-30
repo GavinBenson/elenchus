@@ -120,3 +120,16 @@ PBIs pending.
 ## Epic 5 — AI Layer
 
 PBIs pending.
+
+## Epic 6 — ATS-Quality UI Polish
+
+Added 2026-07-29 after using Epic 1's UI and finding it too bare for the
+portfolio narrative ("built a demo ATS using SaaS-ATS expertise"). Not yet
+brainstormed — needs a design pass before PBIs are written. See
+[roadmap](../superpowers/specs/2026-07-29-roadmap-design.md) for scope/
+sequencing notes (recommended before/alongside Epic 2, not after).
+
+Includes at minimum: standalone applicants list/detail with stage control
+(shipped early, PR #3, since it was needed regardless of visual polish
+level) — everything else (navigation, layout, dashboard visuals, form UX)
+is pending.
