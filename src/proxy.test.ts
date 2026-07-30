@@ -36,9 +36,18 @@ describe('proxy', () => {
     await db.role.delete({ where: { id: roleId } })
   })
 
-  it('does not set x-user-id or x-user-permissions when there is no session cookie', async () => {
+  function getOverrideList(response: Awaited<ReturnType<typeof proxy>>): string[] {
+    const raw = response.headers.get('x-middleware-override-headers')
+    expect(raw, 'expected x-middleware-override-headers to be set, proving the proxy actually rewrote request headers').not.toBeNull()
+    return (raw as string).split(',').map((h) => h.trim())
+  }
+
+  it('does not override x-user-id or x-user-permissions when there is no session cookie', async () => {
     const request = makeRequest()
     const response = await proxy(request)
+    const overrideList = getOverrideList(response)
+    expect(overrideList).not.toContain('x-user-id')
+    expect(overrideList).not.toContain('x-user-permissions')
     expect(response.headers.get('x-middleware-request-x-user-id')).toBeNull()
     expect(response.headers.get('x-middleware-request-x-user-permissions')).toBeNull()
   })
@@ -51,6 +60,25 @@ describe('proxy', () => {
       },
     })
     const response = await proxy(request)
+    const overrideList = getOverrideList(response)
+    expect(overrideList).not.toContain('x-user-id')
+    expect(overrideList).not.toContain('x-user-permissions')
+    expect(response.headers.get('x-middleware-request-x-user-id')).toBeNull()
+    expect(response.headers.get('x-middleware-request-x-user-permissions')).toBeNull()
+  })
+
+  it('strips client-forged headers when the session cookie is invalid garbage', async () => {
+    const request = makeRequest({
+      cookie: 'not-a-real-session-token',
+      extraHeaders: {
+        'x-user-id': 'forged-user',
+        'x-user-permissions': 'manage_roles,edit_employees',
+      },
+    })
+    const response = await proxy(request)
+    const overrideList = getOverrideList(response)
+    expect(overrideList).not.toContain('x-user-id')
+    expect(overrideList).not.toContain('x-user-permissions')
     expect(response.headers.get('x-middleware-request-x-user-id')).toBeNull()
     expect(response.headers.get('x-middleware-request-x-user-permissions')).toBeNull()
   })
@@ -59,6 +87,9 @@ describe('proxy', () => {
     const token = signSession(userId)
     const request = makeRequest({ cookie: token })
     const response = await proxy(request)
+    const overrideList = getOverrideList(response)
+    expect(overrideList).toContain('x-user-id')
+    expect(overrideList).toContain('x-user-permissions')
     expect(response.headers.get('x-middleware-request-x-user-id')).toBe(userId)
     expect(response.headers.get('x-middleware-request-x-user-permissions')).toBe('proxy-test-permission')
   })
