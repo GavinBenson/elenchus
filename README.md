@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Elenchus
 
-## Getting Started
+A small HCM/ATS/SaaS mock application — the system under test for a QA
+engineer's portfolio project. Built to demonstrate senior/principal-level QA
+skills end-to-end: system design, dynamic RBAC, API/DB testing surface,
+CI pipeline, dashboarding, and (later) AI-assisted testing.
 
-First, run the development server:
+See [docs/roadmap](docs/roadmap/backlog.md) for the full epic/PBI backlog and
+[docs/roadmap/defects.md](docs/roadmap/defects.md) for the defect log —
+including a Critical auth bypass caught and fixed by a whole-branch review
+before merge. See [docs/superpowers/specs](docs/superpowers/specs) and
+[docs/superpowers/plans](docs/superpowers/plans) for the design/planning
+trail behind each epic.
+
+## What this is
+
+- **Tech stack:** Next.js 16 (App Router), TypeScript, Prisma 7 + Neon
+  Postgres, Tailwind, Vitest.
+- **Auth:** JWT in an httpOnly cookie, bcrypt password hashing.
+- **Authorization:** dynamic RBAC — roles are just named bundles of
+  permissions (not hardcoded role checks), with per-user permission
+  overrides on top. Every write endpoint checks a specific permission key.
+- **Domain:** employees (with a manager/reports hierarchy), job postings,
+  and an applicant pipeline (applied → interview → offer → hired/rejected).
+- **UI:** intentionally minimal/functional (this app is the *test target*,
+  not the portfolio's visual centerpiece) — a real ATS-quality UI is a
+  planned future epic, see the roadmap.
+
+## Local development
 
 ```bash
+npm install
+npx prisma migrate dev   # apply schema to your Postgres/Neon DB
+npx prisma db seed       # load deterministic fixture data
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Requires a `.env` with `DATABASE_URL` (Postgres/Neon connection string) and
+`JWT_SECRET` (any random string in development). See `.env.example`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Seeded fixture users
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+All fixture users share the password `password123`:
 
-## Learn More
+| Email | Role |
+|---|---|
+| `admin@elenchus.test` | admin (all permissions) |
+| `manager@elenchus.test` | manager |
+| `recruiter@elenchus.test` | recruiter |
+| `employee@elenchus.test` | employee (no permissions) |
 
-To learn more about Next.js, take a look at the following resources:
+## Testing
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm test          # Vitest — unit + API route tests
+npm run build     # type-check + production build
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+`POST /api/test/reset` restores the database to the seeded fixture state
+(non-production only) — intended for use by an automated test suite
+(Epic 2, not yet built) between test runs.
 
-## Deploy on Vercel
+## API
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See [openapi.yaml](openapi.yaml) for the full API spec.
