@@ -42,3 +42,7 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+
+# vendor-generated AI agent guidance, kept locally, not part of the portfolio repo
+/AGENTS.md
+/CLAUDE.md
