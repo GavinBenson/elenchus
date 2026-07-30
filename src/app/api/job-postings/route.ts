@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { db } from '@/lib/db'
 import { hasPermission } from '@/lib/permissions'
-import { ApiError, errorResponse } from '@/lib/errors'
+import { ApiError, errorResponse, toErrorResponse } from '@/lib/errors'
 import { parseOrThrow } from '@/lib/validation'
 
 function getAuthContext(request: Request) {
@@ -16,10 +16,14 @@ const CreateJobPostingSchema = z.object({
 })
 
 export async function GET(request: Request) {
-  const { userId } = getAuthContext(request)
-  if (!userId) return errorResponse(new ApiError(401, 'unauthenticated', 'Login required'))
-  const postings = await db.jobPosting.findMany({ include: { applicants: true } })
-  return Response.json(postings)
+  try {
+    const { userId } = getAuthContext(request)
+    if (!userId) return errorResponse(new ApiError(401, 'unauthenticated', 'Login required'))
+    const postings = await db.jobPosting.findMany({ include: { applicants: true } })
+    return Response.json(postings)
+  } catch (e) {
+    return toErrorResponse(e)
+  }
 }
 
 export async function POST(request: Request) {
@@ -35,7 +39,6 @@ export async function POST(request: Request) {
     })
     return Response.json(posting, { status: 201 })
   } catch (e) {
-    if (e instanceof ApiError) return errorResponse(e)
-    throw e
+    return toErrorResponse(e)
   }
 }

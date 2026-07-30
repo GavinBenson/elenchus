@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { db } from '@/lib/db'
 import { hasPermission } from '@/lib/permissions'
-import { ApiError, errorResponse } from '@/lib/errors'
+import { ApiError, errorResponse, toErrorResponse } from '@/lib/errors'
 import { parseOrThrow } from '@/lib/validation'
 
 function getAuthContext(request: Request) {
@@ -13,12 +13,16 @@ function getAuthContext(request: Request) {
 const CreatePermissionSchema = z.object({ key: z.string().min(1) })
 
 export async function GET(request: Request) {
-  const { userId, permissions } = getAuthContext(request)
-  if (!userId) return errorResponse(new ApiError(401, 'unauthenticated', 'Login required'))
-  if (!hasPermission(permissions, 'manage_roles')) {
-    return errorResponse(new ApiError(403, 'forbidden', 'Missing manage_roles permission'))
+  try {
+    const { userId, permissions } = getAuthContext(request)
+    if (!userId) return errorResponse(new ApiError(401, 'unauthenticated', 'Login required'))
+    if (!hasPermission(permissions, 'manage_roles')) {
+      return errorResponse(new ApiError(403, 'forbidden', 'Missing manage_roles permission'))
+    }
+    return Response.json(await db.permission.findMany())
+  } catch (e) {
+    return toErrorResponse(e)
   }
-  return Response.json(await db.permission.findMany())
 }
 
 export async function POST(request: Request) {
@@ -32,7 +36,6 @@ export async function POST(request: Request) {
     const permission = await db.permission.create({ data: body })
     return Response.json(permission, { status: 201 })
   } catch (e) {
-    if (e instanceof ApiError) return errorResponse(e)
-    throw e
+    return toErrorResponse(e)
   }
 }
