@@ -1,16 +1,11 @@
 # Elenchus
 
-A small HCM/ATS/SaaS mock application — the system under test for a QA
-engineer's portfolio project. Built to demonstrate senior/principal-level QA
+A small HCM/ATS/SaaS mock application system Built to demonstrate QA
 skills end-to-end: system design, dynamic RBAC, API/DB testing surface,
 CI pipeline, dashboarding, and (later) AI-assisted testing.
 
 See [docs/roadmap](docs/roadmap/backlog.md) for the full epic/PBI backlog and
-[docs/roadmap/defects.md](docs/roadmap/defects.md) for the defect log —
-including a Critical auth bypass caught and fixed by a whole-branch review
-before merge. See [docs/superpowers/specs](docs/superpowers/specs) and
-[docs/superpowers/plans](docs/superpowers/plans) for the design/planning
-trail behind each epic.
+[docs/roadmap/defects.md](docs/roadmap/defects.md) for the defect log
 
 ## What this is
 
