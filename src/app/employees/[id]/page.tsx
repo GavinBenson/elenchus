@@ -1,7 +1,13 @@
-import { notFound } from 'next/navigation'
+import { cookies } from 'next/headers'
+import { notFound, redirect } from 'next/navigation'
 import { db } from '@/lib/db'
+import { verifySession, SESSION_COOKIE } from '@/lib/auth'
 
 export default async function EmployeeDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const token = (await cookies()).get(SESSION_COOKIE)?.value
+  const session = token ? verifySession(token) : null
+  if (!session) redirect('/login')
+
   const { id } = await params
   const employee = await db.employee.findUnique({ where: { id } })
   if (!employee) notFound()
