@@ -60,7 +60,10 @@ elenchus/
         roles/route.ts
         permissions/route.ts
         test/reset/route.ts
-    middleware.ts            # attaches user+permissions to request context
+    proxy.ts                 # attaches user+permissions to request context
+                              # (Next.js 16 renamed middleware.ts -> proxy.ts;
+                              # Task 5 built this as src/proxy.ts, see its
+                              # task notes for verification detail)
   openapi.yaml
   docs/... (already exists)
 ```
