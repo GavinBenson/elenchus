@@ -10,7 +10,12 @@ const LoginSchema = z.object({
 })
 
 export async function POST(request: Request) {
-  const body = await request.json()
+  let body: unknown
+  try {
+    body = await request.json()
+  } catch {
+    return errorResponse(new ApiError(400, 'validation_error', 'Request body must be valid JSON'))
+  }
   const parsed = LoginSchema.safeParse(body)
   if (!parsed.success) {
     return errorResponse(new ApiError(400, 'validation_error', parsed.error.message))
