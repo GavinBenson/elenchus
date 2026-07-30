@@ -1,0 +1,501 @@
+openapi: 3.0.3
+info:
+  title: Elenchus API
+  version: 1.0.0
+  description: >
+    Mock applicant-tracking API. Authentication is a signed session cookie
+    (set by /api/auth/login). Downstream API routes are authorized via
+    x-user-id / x-user-permissions request headers derived from that session.
+    All error responses share the shape defined in components.schemas.Error.
+servers:
+  - url: /
+    description: Same-origin (Next.js app router API routes)
+security:
+  - sessionCookie: []
+paths:
+  /api/auth/login:
+    post:
+      summary: Log in
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+      responses:
+        '200': { description: "Logged in, sets session cookie" }
+        '400':
+          description: Validation error (malformed JSON body or failed schema validation)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /api/auth/logout:
+    post:
+      summary: Log out
+      responses:
+        '200': { description: Session cleared }
+  /api/auth/me:
+    get:
+      summary: Current session user
+      responses:
+        '200': { description: "User info (id, email, role name)" }
+        '401':
+          description: No valid session
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /api/employees:
+    get:
+      summary: List employees
+      responses:
+        '200': { description: Array of employees }
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    post:
+      summary: Create employee
+      description: Requires the edit_employees permission.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, department, title, hireDate]
+              properties:
+                name: { type: string }
+                department: { type: string }
+                title: { type: string }
+                hireDate: { type: string, format: date-time }
+                managerId: { type: string }
+                userId: { type: string }
+      responses:
+        '201': { description: Employee created }
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '403':
+          description: Missing edit_employees permission
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /api/employees/{id}:
+    get:
+      summary: Get employee
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Employee }
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    patch:
+      summary: Update employee
+      description: Requires the edit_employees permission.
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                department: { type: string }
+                title: { type: string }
+                status: { type: string, enum: [active, terminated] }
+                managerId: { type: string, nullable: true }
+      responses:
+        '200': { description: Updated employee }
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '403':
+          description: Missing edit_employees permission
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    delete:
+      summary: Delete employee
+      description: Requires the edit_employees permission.
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Deleted }
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '403':
+          description: Missing edit_employees permission
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /api/job-postings:
+    get:
+      summary: List job postings
+      responses:
+        '200': { description: Array of postings with applicants }
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    post:
+      summary: Create job posting
+      description: Requires the edit_job_postings permission.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, department]
+              properties:
+                title: { type: string }
+                department: { type: string }
+      responses:
+        '201': { description: Created }
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '403':
+          description: Missing edit_job_postings permission
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /api/job-postings/{id}:
+    get:
+      summary: Get job posting
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Job posting with applicants }
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    patch:
+      summary: Update job posting
+      description: Requires the edit_job_postings permission.
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+                department: { type: string }
+                status: { type: string, enum: [open, closed] }
+      responses:
+        '200': { description: Updated }
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '403':
+          description: Missing edit_job_postings permission
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    delete:
+      summary: Delete job posting
+      description: Requires the edit_job_postings permission.
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Deleted }
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '403':
+          description: Missing edit_job_postings permission
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /api/applicants:
+    get:
+      summary: List applicants
+      responses:
+        '200': { description: Array of applicants }
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    post:
+      summary: Create applicant
+      description: Requires the edit_job_postings permission.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [jobPostingId, name, email]
+              properties:
+                jobPostingId: { type: string }
+                name: { type: string }
+                email: { type: string, format: email }
+                resumeUrl: { type: string, format: uri }
+      responses:
+        '201': { description: Created }
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '403':
+          description: Missing edit_job_postings permission
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /api/applicants/{id}:
+    get:
+      summary: Get applicant
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Applicant }
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    delete:
+      summary: Delete applicant
+      description: Requires the delete_applicant permission.
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Deleted }
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '403':
+          description: Missing delete_applicant permission
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /api/applicants/{id}/stage:
+    patch:
+      summary: Move applicant to a new pipeline stage
+      description: Requires the delete_applicant permission (shared gate used by the implemented route).
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [stage]
+              properties:
+                stage:
+                  type: string
+                  enum: [applied, interview, offer, hired, rejected]
+      responses:
+        '200': { description: Updated applicant }
+        '400':
+          description: Invalid stage value
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '403':
+          description: Missing delete_applicant permission
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /api/roles:
+    get:
+      summary: List roles
+      description: Requires the manage_roles permission.
+      responses:
+        '200': { description: Array of roles with permissions }
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '403':
+          description: Missing manage_roles permission
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    post:
+      summary: Create role
+      description: Requires the manage_roles permission.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+                permissionKeys:
+                  type: array
+                  items: { type: string }
+                  default: []
+      responses:
+        '201': { description: Created }
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '403':
+          description: Missing manage_roles permission
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /api/permissions:
+    get:
+      summary: List permissions
+      description: Requires the manage_roles permission.
+      responses:
+        '200': { description: Array of permissions }
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '403':
+          description: Missing manage_roles permission
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    post:
+      summary: Create permission
+      description: Requires the manage_roles permission.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [key]
+              properties:
+                key: { type: string }
+      responses:
+        '201': { description: Created }
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '403':
+          description: Missing manage_roles permission
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /api/test/reset:
+    post:
+      summary: Reset database to seed state (non-production only)
+      responses:
+        '200': { description: Reset complete }
+        '404':
+          description: Not available in production
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: elenchus_session
+      description: >
+        HttpOnly session cookie set by /api/auth/login. Downstream routes
+        derive x-user-id / x-user-permissions from this session server-side.
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code: { type: string }
+            message: { type: string }
