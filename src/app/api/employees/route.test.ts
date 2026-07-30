@@ -27,6 +27,22 @@ describe('GET /api/employees', () => {
     const response = await GET(request)
     expect(response.status).toBe(401)
   })
+
+  it('returns 403 when caller lacks view_all_employees permission', async () => {
+    const request = new Request('http://localhost/api/employees', {
+      headers: { 'x-user-id': 'test-user', 'x-user-permissions': '' },
+    })
+    const response = await GET(request)
+    expect(response.status).toBe(403)
+  })
+
+  it('returns 200 when caller has view_all_employees permission', async () => {
+    const request = new Request('http://localhost/api/employees', {
+      headers: { 'x-user-id': 'test-user', 'x-user-permissions': 'view_all_employees' },
+    })
+    const response = await GET(request)
+    expect(response.status).toBe(200)
+  })
 })
 
 describe('PATCH /api/employees/[id]', () => {
