@@ -3,11 +3,17 @@
 PBIs per epic. See [roadmap](../superpowers/specs/2026-07-29-roadmap-design.md)
 for epic overview, and each epic's design doc for architectural detail.
 
-## Epic 1 — Mock Application
+## Epic 1 — Mock Application [DONE — 2026-07-29]
 
 Design: [2026-07-29-epic1-mock-app-design.md](../superpowers/specs/2026-07-29-epic1-mock-app-design.md)
+Implementation plan: [2026-07-29-epic1-mock-app.md](../superpowers/plans/2026-07-29-epic1-mock-app.md)
 
-### PBI 1.1 — Project scaffold
+All 12 plan tasks implemented, reviewed, and merged to main. Several bugs
+were found and fixed along the way (per-task review + a final whole-branch
+review that caught a Critical auth bypass and unguarded UI pages before
+merge) — see [defects.md](defects.md) for the full list with fix commits.
+
+### PBI 1.1 — [DONE] Project scaffold
 **Description:** Initialize Next.js (App Router) + TypeScript project. Set up
 Prisma with Neon Postgres connection. Configure Tailwind, ESLint, Zod.
 **Acceptance criteria:**
@@ -15,7 +21,7 @@ Prisma with Neon Postgres connection. Configure Tailwind, ESLint, Zod.
 - Prisma connects to Neon and can run `migrate dev`
 - Lint passes on a clean checkout
 
-### PBI 1.2 — Data model & migrations
+### PBI 1.2 — [DONE] Data model & migrations
 **Description:** Implement Prisma schema: User, Role, Permission,
 RolePermission, UserPermissionOverride, Employee, JobPosting, Applicant.
 **Acceptance criteria:**
@@ -24,7 +30,7 @@ RolePermission, UserPermissionOverride, Employee, JobPosting, Applicant.
 - Self-referential `Employee.managerId` relation works (query an employee's
   reports)
 
-### PBI 1.3 — Auth (login/logout/session)
+### PBI 1.3 — [DONE] Auth (login/logout/session)
 **Description:** JWT-in-httpOnly-cookie auth. `POST /api/auth/login`,
 `POST /api/auth/logout`, `GET /api/auth/me`. Bcrypt password hashing.
 **Acceptance criteria:**
@@ -33,7 +39,7 @@ RolePermission, UserPermissionOverride, Employee, JobPosting, Applicant.
 - Invalid credentials return 401 with standard error shape
 - Logout clears the session cookie
 
-### PBI 1.4 — Permission engine
+### PBI 1.4 — [DONE] Permission engine
 **Description:** `hasPermission(user, key)` resolving effective permissions
 from Role bundle + UserPermissionOverride. Middleware attaches resolved
 permissions to request context.
@@ -44,7 +50,7 @@ permissions to request context.
 - A permission granted via override on a role that lacks it passes
   `hasPermission`
 
-### PBI 1.5 — Employees API
+### PBI 1.5 — [DONE] Employees API
 **Description:** `GET/POST /api/employees`, `GET/PATCH/DELETE /api/employees/:id`,
 permission-gated.
 **Acceptance criteria:**
@@ -52,12 +58,12 @@ permission-gated.
 - Unauthenticated request gets 401
 - Invalid payload gets 400 with field-level Zod errors
 
-### PBI 1.6 — Job Postings API
+### PBI 1.6 — [DONE] Job Postings API
 **Description:** `GET/POST /api/job-postings`, `GET/PATCH/DELETE /api/job-postings/:id`,
 permission-gated.
 **Acceptance criteria:** same shape as PBI 1.5, scoped to job postings.
 
-### PBI 1.7 — Applicants API
+### PBI 1.7 — [DONE] Applicants API
 **Description:** `GET/POST /api/applicants`, `GET/PATCH/DELETE /api/applicants/:id`,
 `PATCH /api/applicants/:id/stage`.
 **Acceptance criteria:**
@@ -65,7 +71,7 @@ permission-gated.
   correctly
 - Same auth/validation shape as other resource APIs
 
-### PBI 1.8 — Roles & Permissions admin API
+### PBI 1.8 — [DONE] Roles & Permissions admin API
 **Description:** `GET/POST /api/roles`, `GET/POST /api/permissions`,
 admin-only.
 **Acceptance criteria:**
@@ -73,7 +79,7 @@ admin-only.
 - Admin can create a role, attach permissions, and see it reflected in
   `hasPermission` checks for a user with that role
 
-### PBI 1.9 — Seed script & test-reset endpoint
+### PBI 1.9 — [DONE] Seed script & test-reset endpoint
 **Description:** `prisma/seed.ts` with deterministic fixture data (fixed
 users per role, postings, applicants). `POST /api/test/reset`, gated to
 non-prod, restores seed state.
@@ -82,7 +88,7 @@ non-prod, restores seed state.
 - `/api/test/reset` is unreachable when `NODE_ENV=production`
 - Calling reset mid-test restores known state (no leftover test data)
 
-### PBI 1.10 — UI pages
+### PBI 1.10 — [DONE] UI pages
 **Description:** `/login`, `/dashboard` (role-aware), `/employees`,
 `/job-postings` (with pipeline view), `/admin/roles`. `data-testid` on
 interactive elements.
@@ -91,7 +97,7 @@ interactive elements.
 - All interactive elements (forms, buttons, nav) carry stable `data-testid`
 - Pages render only data the logged-in user is permitted to see
 
-### PBI 1.11 — OpenAPI spec
+### PBI 1.11 — [DONE] OpenAPI spec
 **Description:** Maintain an OpenAPI spec describing all `/api/*` routes,
 kept in sync as routes are built.
 **Acceptance criteria:**
