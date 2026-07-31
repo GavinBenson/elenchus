@@ -158,78 +158,45 @@ rejected`. The board is five columns, two of them terminal.
 
 ## PBIs
 
-### 6.1 — Data foundation
+Fifteen PBIs in four bands. Full descriptions and acceptance criteria live in
+[backlog.md](../../roadmap/backlog.md); this section covers the shape and the
+sequencing logic.
 
-Add `stageChangedAt` (migration + stage handler + OpenAPI). Expand the seed:
-the four fixture users and their existing records stay byte-identical, then
-append roughly 40 employees across departments, 6 postings, and 45 applicants
-distributed realistically across the five stages with varied `appliedAt` and
-`stageChangedAt`.
+**Data (6.1–6.2)** — `stageChangedAt` migration and handler change, then seed
+expansion. Separate PBIs because one touches the API surface and one does not.
+Both ship before any UI work, because screens designed against four applicants
+come out wrong.
 
-Deterministic — fixed literal data or a fixed-seed generator, never unseeded
-randomness — so running the seed twice yields identical state and Epic 2 can
-still assert against known fixtures.
+**Foundation (6.3–6.5)** — palette and dark-mode tokens, then UI primitives,
+then the app shell. Each is independently verifiable: tokens by forcing `.dark`
+and re-theming, primitives by component tests, the shell by auth and nav-
+filtering tests.
 
-Ships first because every later screen needs realistic density to be designed
-against.
+The dark-mode toggle control does not ship with the tokens — it lives in the
+sidebar, which does not exist until 6.5. The tokens PBI carries the dark token
+set and the pre-paint script; the toggle follows.
 
-### 6.2 — Design system, shell, and applicants list
+The risk in splitting primitives away from their first consumer is building
+things no screen wants. Mitigated by an explicit acceptance criterion on 6.4:
+nothing is built that no screen in this epic consumes.
 
-Everything under Architecture and Design system above, proven by porting one
-real screen in the same PBI: the applicants table with search, stage filter,
-role filter, and aging highlight on offers older than ten days.
+**Screens (6.6–6.14)** — applicants list, pipeline board, applicant detail,
+job postings, employees, admin/recruiter dashboards, manager/employee
+dashboards, login, roles matrix. One resource or one coherent screen pair per
+PBI, each independently shippable and reviewable.
 
-Building the primitives against a real screen rather than in the abstract is
-the point — this is where their shape is validated.
+Applicants comes first among the screens because it is the epic's hero flow and
+the densest use of the primitives — problems with the design system surface
+there or nowhere.
 
-### 6.3 — Pipeline board
-
-Five-column board at `/applicants/board`. Drag-and-drop via dnd-kit with an
-optimistic stage update and rollback on API failure. Keyboard dragging works.
-
-The existing `StageControl` dropdown remains on the detail page as both the
-accessible path and the stable test path.
-
-### 6.4 — Applicant detail
-
-Two-column layout: candidate summary, stage timeline, linked posting, resume
-link. The stage control is restyled, not relocated.
-
-### 6.5 — Job postings and employees
-
-Both list and detail screens for both resources adopt the design system.
-Employees renders the manager/reports hierarchy as a real reports table — that
-relation exists in the schema but is currently invisible in the UI.
-
-### 6.6 — Dashboards
-
-All four role variants:
-
-- **Admin** — tile row (open roles, active candidates, in interview, offers
-  out) plus a stage-distribution bar.
-- **Recruiter** — open postings with applicant counts and an aging-offers
-  callout.
-- **Manager** — a real reports table.
-- **Employee** — a genuine landing screen rather than the word "Welcome".
-
-### 6.7 — Login and roles admin
-
-Login gets a proper split-screen treatment — it is the first screen anyone
-sees. The roles admin screen gets a permission matrix instead of a bare list.
-
-### 6.8 — Consistency sweep
-
-Click every route in every role, in light and dark mode, at mobile and desktop
-widths. Fix what is inconsistent.
-
-An explicit PBI because the epic's success criterion is a click-around test,
-and that is only verifiable once every screen exists.
+**Sweep (6.15)** — click every route in every role, in light and dark, at
+mobile and desktop widths. An explicit PBI because the epic's success criterion
+is a click-around test, and that is only verifiable once every screen exists.
 
 ### States
 
 Empty, loading, and error states are not a separate PBI. They are acceptance
-criteria on every screen PBI above, so no screen can be called done without
-them.
+criteria on every screen PBI, so no screen can be called done without them.
 
 ## Test ID contract
 
@@ -266,22 +233,27 @@ Vitest:
 - The test-ID contract test above.
 - `npm run build` clean on every PBI.
 
-Not covered automatically: whether it looks good. That is the 6.8 manual sweep,
+Not covered automatically: whether it looks good. That is the 6.15 manual sweep,
 and dark mode doubles it.
 
 ## Risks
 
-**Drag-and-drop flake (6.3).** The highest-flake-risk feature in the project,
+**Drag-and-drop flake (6.7).** The highest-flake-risk feature in the project,
 and Epic 2 will have to test it. That is deliberate — it is a showcase of
 testing hard interactions. If it fights back during implementation, the
 fallback is click-to-move via a menu on each card. The dropdown control
 existing throughout both routes means the app is never broken while the board
 is being sorted out.
 
-**6.2 is a large PBI.** It carries the design system, the shell, the auth
-refactor, and a screen. It is kept together because primitives designed without
-a real consumer tend to be wrong, but it should be reviewed in stages rather
-than as one diff.
+**Primitives built without a consumer (6.4).** Splitting the design system away
+from its first screen risks building the wrong abstractions. Mitigated by
+scoping 6.4 to what the epic's screens actually need and accepting that later
+screen PBIs may revise a primitive — the component tests make that safe.
+
+**Half-migrated app between 6.5 and 6.15.** The shell lands before the screens
+are restyled, so for several PBIs the app has good navigation wrapped around
+unstyled pages. Acceptable because each PBI is still individually shippable and
+nothing is broken, but the app should not be demoed mid-epic.
 
 **Dark mode doubles visual QA.** Accepted — it is a real demo touch and another
 Epic 2 test surface — but every screen PBI's acceptance includes both modes.
@@ -289,7 +261,7 @@ Epic 2 test surface — but every screen PBI's acceptance includes both modes.
 ## Out of scope
 
 - Mobile-first redesign. Screens must not break at mobile widths (checked in
-  6.8), but the app is designed for desktop, as real ATS tools are.
+  6.15), but the app is designed for desktop, as real ATS tools are.
 - Animation and transitions beyond basic hover and focus states.
 - Any change to the API surface other than `stageChangedAt`.
 - Replacing the fixture users or their records — they are an Epic 2 contract.
