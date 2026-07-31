@@ -46,3 +46,6 @@ next-env.d.ts
 # vendor-generated AI agent guidance, kept locally, not part of the portfolio repo
 /AGENTS.md
 /CLAUDE.md
+
+# brainstorming visual companion
+.superpowers/

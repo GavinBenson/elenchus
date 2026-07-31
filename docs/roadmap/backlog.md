@@ -123,13 +123,98 @@ PBIs pending.
 
 ## Epic 6 — ATS-Quality UI Polish
 
-Added 2026-07-29 after using Epic 1's UI and finding it too bare for the
-portfolio narrative ("built a demo ATS using SaaS-ATS expertise"). Not yet
-brainstormed — needs a design pass before PBIs are written. See
-[roadmap](../superpowers/specs/2026-07-29-roadmap-design.md) for scope/
-sequencing notes (recommended before/alongside Epic 2, not after).
+Design: [2026-07-31-epic6-ats-ui-polish-design.md](../superpowers/specs/2026-07-31-epic6-ats-ui-polish-design.md)
 
-Includes at minimum: standalone applicants list/detail with stage control
-(shipped early, PR #3, since it was needed regardless of visual polish
-level) — everything else (navigation, layout, dashboard visuals, form UX)
-is pending.
+Added 2026-07-29 after using Epic 1's UI and finding it too bare for the
+portfolio narrative ("built a demo ATS using SaaS-ATS expertise"). Brainstormed
+and speced 2026-07-31. Runs before or alongside Epic 2, not after — reworking
+visual structure post-hoc would relocate `data-testid`s twice.
+
+Visual direction: warm product palette (rust accent on warm off-white)
+carrying enterprise-ATS information density. Success bar: click through every
+route in every role and find nothing that feels unfinished.
+
+Standalone applicants list/detail with stage control shipped early (PR #3),
+since it was needed regardless of visual polish level.
+
+Empty, loading, and error states are acceptance criteria on every screen PBI
+below rather than a PBI of their own — no screen is done without them. Every
+screen PBI is also verified in both light and dark mode.
+
+### PBI 6.1 — Data foundation
+**Description:** Add `Applicant.stageChangedAt` (migration, stage PATCH
+handler, OpenAPI). Expand the seed with ~40 employees, 6 postings, and 45
+applicants spread across the five stages with varied dates — leaving the four
+fixture users and their existing records byte-identical.
+**Acceptance criteria:**
+- Stage transitions update `stageChangedAt`; "days in stage" is derivable
+- Running the seed twice yields identical state (no unseeded randomness)
+- The four fixture users and their existing records are unchanged
+- OpenAPI spec reflects the new field
+
+### PBI 6.2 — Design system, shell, and applicants list
+**Description:** `(app)` route group with a sidebar layout, `page-auth.ts`
+helpers replacing per-page auth boilerplate, warm palette as Tailwind v4
+`@theme` tokens, dark mode, and the `src/components/ui/` primitives — proven
+by porting the applicants list in the same PBI.
+**Acceptance criteria:**
+- URLs are unchanged; every existing `data-testid` still resolves
+- Nav links are filtered by resolved permissions (no Employees link without
+  `view_all_employees`)
+- Dark mode toggles, persists, defaults to OS preference, no flash on load
+- `requireSession` / `requirePermission` have unit tests covering the
+  unauthenticated, unpermitted, and success paths
+- Applicants list has search, stage filter, role filter, and aging highlight
+
+### PBI 6.3 — Pipeline board
+**Description:** Five-column board at `/applicants/board` with dnd-kit
+drag-and-drop, optimistic update, and rollback on API failure.
+**Acceptance criteria:**
+- Dragging a card between columns persists the stage change
+- A failed API call rolls the card back and surfaces an error
+- Dragging works by keyboard, not only mouse
+- The detail-page `StageControl` dropdown still works unchanged
+
+### PBI 6.4 — Applicant detail
+**Description:** Two-column detail: candidate summary, stage timeline, linked
+posting, resume link. Stage control restyled in place.
+**Acceptance criteria:**
+- Stage timeline reflects `appliedAt` and `stageChangedAt`
+- `applicant-detail`, `applicant-name`, `applicant-email`,
+  `applicant-stage`, `applicant-job-posting` all still resolve
+
+### PBI 6.5 — Job postings and employees
+**Description:** List and detail screens for both resources adopt the design
+system. Employees renders the manager/reports hierarchy.
+**Acceptance criteria:**
+- An employee's direct reports are visible and navigable from their detail page
+- Job posting detail shows its applicant pipeline with counts
+- Permission gating behaves exactly as before
+
+### PBI 6.6 — Dashboards
+**Description:** All four role variants rebuilt — admin tiles plus stage
+distribution, recruiter postings with counts and aging-offer callout, manager
+reports table, employee landing screen.
+**Acceptance criteria:**
+- Each role sees its own variant; `dashboard-{role}` test IDs preserved
+- `stat-employee-count`, `stat-posting-count`, `stat-applicant-count` still
+  resolve and still report correct numbers
+- No dashboard renders data the user lacks permission to see
+
+### PBI 6.7 — Login and roles admin
+**Description:** Split-screen login treatment. Roles admin becomes a
+permission matrix.
+**Acceptance criteria:**
+- `login-form`, `login-email`, `login-password`, `login-submit`, `login-error`
+  all preserved; error state is visually designed
+- Roles matrix shows which permissions each role grants
+- Non-admins still cannot reach the roles screen
+
+### PBI 6.8 — Consistency sweep
+**Description:** Click every route as every role, in light and dark, at mobile
+and desktop widths. Fix inconsistencies.
+**Acceptance criteria:**
+- No route renders unstyled or half-migrated UI in any role
+- No horizontal scroll or broken layout at mobile widths
+- `testid-contract.test.ts` passes — no test ID lost across the epic
+- `npm test` and `npm run build` clean
