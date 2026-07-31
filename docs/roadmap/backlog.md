@@ -141,7 +141,7 @@ Empty, loading, and error states are acceptance criteria on every screen PBI
 below rather than a PBI of their own — no screen is done without them. Every
 screen PBI is also verified in both light and dark mode.
 
-### PBI 6.1 — `stageChangedAt` field
+### PBI 6.1 — [DONE] `stageChangedAt` field
 **Description:** Add `Applicant.stageChangedAt` — Prisma migration, set it in
 the `PATCH /api/applicants/:id/stage` handler, update the OpenAPI spec.
 **Acceptance criteria:**
@@ -150,7 +150,7 @@ the `PATCH /api/applicants/:id/stage` handler, update the OpenAPI spec.
 - OpenAPI spec reflects the new field
 - Existing stage tests still pass
 
-### PBI 6.2 — Seed expansion
+### PBI 6.2 — [DONE] Seed expansion
 **Description:** Append ~40 employees across departments, 6 postings, and 45
 applicants spread across the five stages with varied `appliedAt` /
 `stageChangedAt`. The four fixture users and their existing records stay

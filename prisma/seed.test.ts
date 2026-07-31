@@ -182,3 +182,60 @@ describe('seed — postings and applicants', () => {
     }
   })
 })
+
+describe('seed — determinism', () => {
+  /**
+   * Projects the database to a stable, comparable shape: no cuid()s, relations
+   * dereferenced to natural keys, deterministic ordering.
+   */
+  async function snapshot() {
+    const employees = await db.employee.findMany({
+      include: { manager: true, user: true },
+      orderBy: { name: 'asc' },
+    })
+    const postings = await db.jobPosting.findMany({
+      include: { createdBy: true },
+      orderBy: { title: 'asc' },
+    })
+    const applicants = await db.applicant.findMany({
+      include: { jobPosting: true },
+      orderBy: [{ email: 'asc' }],
+    })
+
+    return {
+      employees: employees.map((e) => ({
+        name: e.name,
+        department: e.department,
+        title: e.title,
+        hireDate: e.hireDate.toISOString(),
+        status: e.status,
+        manager: e.manager?.name ?? null,
+        userEmail: e.user?.email ?? null,
+      })),
+      postings: postings.map((p) => ({
+        title: p.title,
+        department: p.department,
+        status: p.status,
+        createdBy: p.createdBy.email,
+      })),
+      applicants: applicants.map((a) => ({
+        name: a.name,
+        email: a.email,
+        posting: a.jobPosting.title,
+        stage: a.stage,
+        appliedAt: a.appliedAt.toISOString(),
+        stageChangedAt: a.stageChangedAt.toISOString(),
+      })),
+    }
+  }
+
+  it('produces identical state when run twice', async () => {
+    await runSeed()
+    const first = await snapshot()
+
+    await runSeed()
+    const second = await snapshot()
+
+    expect(second).toEqual(first)
+  }, 120_000)
+})
