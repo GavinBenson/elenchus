@@ -92,4 +92,5 @@ model Applicant {
   resumeUrl    String?
   stage        String     @default("applied") // applied | interview | offer | hired | rejected
   appliedAt    DateTime   @default(now())
+  stageChangedAt DateTime @default(now())
 }
