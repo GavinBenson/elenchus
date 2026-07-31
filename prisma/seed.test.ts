@@ -1,11 +1,47 @@
-import { describe, it, expect, beforeAll } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { db } from '../src/lib/db'
 import { runSeed } from './seed'
+import { dayStart } from './seed-data/dates'
 
 describe('seed — fixture preservation', () => {
   beforeAll(async () => {
     await runSeed()
   }, 60_000)
+
+  afterAll(async () => {
+    await db.$disconnect()
+  })
+
+  it('produces the exact expected record counts', async () => {
+    const [userCount, employeeCount, postingCount, applicantCount] = await Promise.all([
+      db.user.count(),
+      db.employee.count(),
+      db.jobPosting.count(),
+      db.applicant.count(),
+    ])
+    expect(userCount).toBe(4)
+    expect(employeeCount).toBe(2)
+    expect(postingCount).toBe(1)
+    expect(applicantCount).toBe(1)
+  })
+
+  it("links Morgan Manager's userId to manager@elenchus.test", async () => {
+    const morgan = await db.employee.findFirstOrThrow({
+      where: { name: 'Morgan Manager' },
+      include: { user: true },
+    })
+    expect(morgan.user?.email).toBe('manager@elenchus.test')
+  })
+
+  it('sets Alex Applicant appliedAt and stageChangedAt to midnight UTC today', async () => {
+    const alex = await db.applicant.findFirstOrThrow({
+      where: { name: 'Alex Applicant' },
+    })
+    const expected = dayStart()
+    expect(alex.appliedAt.toISOString()).toBe(expected.toISOString())
+    expect(alex.stageChangedAt.toISOString()).toBe(expected.toISOString())
+    expect(alex.appliedAt.toISOString()).toBe(alex.stageChangedAt.toISOString())
+  })
 
   it('keeps the four fixture users', async () => {
     const users = await db.user.findMany({

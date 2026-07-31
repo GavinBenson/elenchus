@@ -80,6 +80,14 @@ export async function runSeed() {
         `Seed data error: "${e.name}" lists manager "${e.managerName}", who is not defined earlier in the list.`
       )
     }
+    if (e.userEmail && !userIdByEmail[e.userEmail]) {
+      throw new Error(
+        `Seed data error: "${e.name}" lists userEmail "${e.userEmail}", who is not a defined fixture user.`
+      )
+    }
+    if (employeeIdByName[e.name]) {
+      throw new Error(`Seed data error: duplicate employee name "${e.name}".`)
+    }
     const created = await db.employee.create({
       data: {
         name: e.name,
@@ -96,6 +104,14 @@ export async function runSeed() {
 
   const postingIdByTitle: Record<string, string> = {}
   for (const p of postings) {
+    if (!userIdByEmail[p.createdByEmail]) {
+      throw new Error(
+        `Seed data error: posting "${p.title}" lists createdByEmail "${p.createdByEmail}", who is not a defined fixture user.`
+      )
+    }
+    if (postingIdByTitle[p.title]) {
+      throw new Error(`Seed data error: duplicate posting title "${p.title}".`)
+    }
     const created = await db.jobPosting.create({
       data: {
         title: p.title,
