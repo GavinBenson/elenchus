@@ -20,7 +20,7 @@ describe('seed — fixture preservation', () => {
       db.applicant.count(),
     ])
     expect(userCount).toBe(4)
-    expect(employeeCount).toBe(2)
+    expect(employeeCount).toBe(42)
     expect(postingCount).toBe(1)
     expect(applicantCount).toBe(1)
   })
@@ -95,5 +95,41 @@ describe('seed — fixture preservation', () => {
     expect(alex.email).toBe('alex.applicant@example.com')
     expect(alex.stage).toBe('applied')
     expect(alex.jobPosting.title).toBe('QA Engineer')
+  })
+})
+
+describe('seed — expanded roster', () => {
+  it('seeds at least 40 employees', async () => {
+    const count = await db.employee.count()
+    expect(count).toBeGreaterThanOrEqual(40)
+  })
+
+  it('has a hierarchy at least four levels deep', async () => {
+    // Walk up from a known individual contributor to the top of the tree.
+    let current = await db.employee.findFirstOrThrow({
+      where: { name: 'Yuki Tanaka' },
+    })
+    let depth = 1
+    while (current.managerId) {
+      current = await db.employee.findUniqueOrThrow({
+        where: { id: current.managerId },
+      })
+      depth += 1
+    }
+    expect(depth).toBeGreaterThanOrEqual(4)
+    expect(current.name).toBe('Rosalind Achebe')
+  })
+
+  it('includes terminated employees so the UI can distinguish them', async () => {
+    const terminated = await db.employee.count({
+      where: { status: 'terminated' },
+    })
+    expect(terminated).toBeGreaterThanOrEqual(2)
+  })
+
+  it('spans multiple departments', async () => {
+    const rows = await db.employee.findMany({ select: { department: true } })
+    const departments = new Set(rows.map((r) => r.department))
+    expect(departments.size).toBeGreaterThanOrEqual(5)
   })
 })
