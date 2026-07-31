@@ -51,17 +51,40 @@ export async function runSeed() {
 
   const passwordHash = await bcrypt.hash('password123', 10)
 
+  // Fixture accounts are founding users; their creation date is historical and
+  // has no reason to drift with the calendar, so it's set explicitly here
+  // rather than via daysAgo() (mirrors how employee hireDate is handled).
   const admin = await db.user.create({
-    data: { email: 'admin@elenchus.test', passwordHash, roleId: adminRole.id },
+    data: {
+      email: 'admin@elenchus.test',
+      passwordHash,
+      roleId: adminRole.id,
+      createdAt: new Date('2026-01-15'),
+    },
   })
   const manager = await db.user.create({
-    data: { email: 'manager@elenchus.test', passwordHash, roleId: managerRole.id },
+    data: {
+      email: 'manager@elenchus.test',
+      passwordHash,
+      roleId: managerRole.id,
+      createdAt: new Date('2026-01-20'),
+    },
   })
   const recruiter = await db.user.create({
-    data: { email: 'recruiter@elenchus.test', passwordHash, roleId: recruiterRole.id },
+    data: {
+      email: 'recruiter@elenchus.test',
+      passwordHash,
+      roleId: recruiterRole.id,
+      createdAt: new Date('2026-01-22'),
+    },
   })
   const employeeUser = await db.user.create({
-    data: { email: 'employee@elenchus.test', passwordHash, roleId: employeeRole.id },
+    data: {
+      email: 'employee@elenchus.test',
+      passwordHash,
+      roleId: employeeRole.id,
+      createdAt: new Date('2026-01-25'),
+    },
   })
 
   const userIdByEmail: Record<string, string> = {

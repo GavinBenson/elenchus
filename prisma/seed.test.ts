@@ -189,6 +189,10 @@ describe('seed — determinism', () => {
    * dereferenced to natural keys, deterministic ordering.
    */
   async function snapshot() {
+    const users = await db.user.findMany({
+      include: { role: true },
+      orderBy: { email: 'asc' },
+    })
     const employees = await db.employee.findMany({
       include: { manager: true, user: true },
       orderBy: { name: 'asc' },
@@ -203,6 +207,11 @@ describe('seed — determinism', () => {
     })
 
     return {
+      users: users.map((u) => ({
+        email: u.email,
+        role: u.role.name,
+        createdAt: u.createdAt.toISOString(),
+      })),
       employees: employees.map((e) => ({
         name: e.name,
         department: e.department,
@@ -238,6 +247,7 @@ describe('seed — determinism', () => {
     await runSeed()
     const second = await snapshot()
 
+    expect(first.users.length).toBeGreaterThan(0)
     expect(first.employees.length).toBeGreaterThan(0)
     expect(first.postings.length).toBeGreaterThan(0)
     expect(first.applicants.length).toBeGreaterThan(0)
