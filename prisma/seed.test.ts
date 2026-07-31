@@ -21,8 +21,8 @@ describe('seed — fixture preservation', () => {
     ])
     expect(userCount).toBe(4)
     expect(employeeCount).toBe(42)
-    expect(postingCount).toBe(1)
-    expect(applicantCount).toBe(1)
+    expect(postingCount).toBe(7)
+    expect(applicantCount).toBe(46)
   })
 
   it("links Morgan Manager's userId to manager@elenchus.test", async () => {
@@ -131,5 +131,54 @@ describe('seed — expanded roster', () => {
     const rows = await db.employee.findMany({ select: { department: true } })
     const departments = new Set(rows.map((r) => r.department))
     expect(departments.size).toBeGreaterThanOrEqual(5)
+  })
+})
+
+describe('seed — postings and applicants', () => {
+  it('seeds at least 6 postings including a closed one', async () => {
+    const postings = await db.jobPosting.findMany()
+    expect(postings.length).toBeGreaterThanOrEqual(6)
+    expect(postings.some((p) => p.status === 'closed')).toBe(true)
+    expect(postings.some((p) => p.status === 'open')).toBe(true)
+  })
+
+  it('seeds at least 45 applicants across all five stages', async () => {
+    const applicants = await db.applicant.findMany()
+    expect(applicants.length).toBeGreaterThanOrEqual(45)
+
+    const byStage = new Map<string, number>()
+    for (const a of applicants) {
+      byStage.set(a.stage, (byStage.get(a.stage) ?? 0) + 1)
+    }
+    for (const stage of ['applied', 'interview', 'offer', 'hired', 'rejected']) {
+      expect(byStage.get(stage) ?? 0).toBeGreaterThan(0)
+    }
+  })
+
+  it('distributes applicants unevenly across stages', async () => {
+    const applicants = await db.applicant.findMany()
+    const counts = new Map<string, number>()
+    for (const a of applicants) {
+      counts.set(a.stage, (counts.get(a.stage) ?? 0) + 1)
+    }
+    // A uniform split would look synthetic; the pipeline should narrow.
+    expect(counts.get('applied')!).toBeGreaterThan(counts.get('offer')!)
+  })
+
+  it('includes an offer aging past 10 days for the aging highlight', async () => {
+    const tenDaysAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000)
+    const aging = await db.applicant.count({
+      where: { stage: 'offer', stageChangedAt: { lt: tenDaysAgo } },
+    })
+    expect(aging).toBeGreaterThanOrEqual(1)
+  })
+
+  it('never moves an applicant to a stage before they applied', async () => {
+    const applicants = await db.applicant.findMany()
+    for (const a of applicants) {
+      expect(a.stageChangedAt.getTime()).toBeGreaterThanOrEqual(
+        a.appliedAt.getTime()
+      )
+    }
   })
 })
