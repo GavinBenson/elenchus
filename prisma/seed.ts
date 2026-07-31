@@ -118,6 +118,7 @@ export async function runSeed() {
         department: p.department,
         status: p.status,
         createdById: userIdByEmail[p.createdByEmail],
+        createdAt: daysAgo(p.createdDaysAgo),
       },
     })
     postingIdByTitle[p.title] = created.id

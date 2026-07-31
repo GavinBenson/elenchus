@@ -217,6 +217,7 @@ describe('seed — determinism', () => {
         department: p.department,
         status: p.status,
         createdBy: p.createdBy.email,
+        createdAt: p.createdAt.toISOString(),
       })),
       applicants: applicants.map((a) => ({
         name: a.name,
@@ -225,6 +226,7 @@ describe('seed — determinism', () => {
         stage: a.stage,
         appliedAt: a.appliedAt.toISOString(),
         stageChangedAt: a.stageChangedAt.toISOString(),
+        resumeUrl: a.resumeUrl,
       })),
     }
   }
@@ -235,6 +237,10 @@ describe('seed — determinism', () => {
 
     await runSeed()
     const second = await snapshot()
+
+    expect(first.employees.length).toBeGreaterThan(0)
+    expect(first.postings.length).toBeGreaterThan(0)
+    expect(first.applicants.length).toBeGreaterThan(0)
 
     expect(second).toEqual(first)
   }, 120_000)
