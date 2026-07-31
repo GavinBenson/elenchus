@@ -25,7 +25,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const body = parseOrThrow(StageSchema, await request.json())
     const existing = await db.applicant.findUnique({ where: { id } })
     if (!existing) return errorResponse(new ApiError(404, 'not_found', 'Applicant not found'))
-    const applicant = await db.applicant.update({ where: { id }, data: { stage: body.stage } })
+    const applicant = await db.applicant.update({
+      where: { id },
+      data: { stage: body.stage, stageChangedAt: new Date() },
+    })
     return Response.json(applicant)
   } catch (e) {
     return toErrorResponse(e)
