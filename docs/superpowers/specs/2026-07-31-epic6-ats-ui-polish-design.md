@@ -167,6 +167,16 @@ expansion. Separate PBIs because one touches the API surface and one does not.
 Both ship before any UI work, because screens designed against four applicants
 come out wrong.
 
+*Scope of "byte-identical" (amended 2026-07-31 during implementation).* The
+guarantee covers fixture records' identity, values, and relationships — names,
+emails, departments, titles, hire dates, stages, and who reports to or was
+created by whom. It deliberately excludes `Applicant.appliedAt` and
+`Applicant.stageChangedAt`, which previously took the schema's `now()` default
+and were therefore different on every seed run. They now derive from a
+midnight-UTC anchor. This is what makes determinism testable at all — a
+`now()` default can never be deterministic — so Alex Applicant's timestamps
+are midnight UTC of the seed date rather than the moment of seeding.
+
 **Foundation (6.3–6.5)** — palette and dark-mode tokens, then UI primitives,
 then the app shell. Each is independently verifiable: tokens by forcing `.dark`
 and re-theming, primitives by component tests, the shell by auth and nav-
