@@ -123,13 +123,182 @@ PBIs pending.
 
 ## Epic 6 — ATS-Quality UI Polish
 
-Added 2026-07-29 after using Epic 1's UI and finding it too bare for the
-portfolio narrative ("built a demo ATS using SaaS-ATS expertise"). Not yet
-brainstormed — needs a design pass before PBIs are written. See
-[roadmap](../superpowers/specs/2026-07-29-roadmap-design.md) for scope/
-sequencing notes (recommended before/alongside Epic 2, not after).
+Design: [2026-07-31-epic6-ats-ui-polish-design.md](../superpowers/specs/2026-07-31-epic6-ats-ui-polish-design.md)
 
-Includes at minimum: standalone applicants list/detail with stage control
-(shipped early, PR #3, since it was needed regardless of visual polish
-level) — everything else (navigation, layout, dashboard visuals, form UX)
-is pending.
+Added 2026-07-29 after using Epic 1's UI and finding it too bare for the
+portfolio narrative ("built a demo ATS using SaaS-ATS expertise"). Brainstormed
+and speced 2026-07-31. Runs before or alongside Epic 2, not after — reworking
+visual structure post-hoc would relocate `data-testid`s twice.
+
+Visual direction: warm product palette (rust accent on warm off-white)
+carrying enterprise-ATS information density. Success bar: click through every
+route in every role and find nothing that feels unfinished.
+
+Standalone applicants list/detail with stage control shipped early (PR #3),
+since it was needed regardless of visual polish level.
+
+Empty, loading, and error states are acceptance criteria on every screen PBI
+below rather than a PBI of their own — no screen is done without them. Every
+screen PBI is also verified in both light and dark mode.
+
+### PBI 6.1 — [DONE] `stageChangedAt` field
+**Description:** Add `Applicant.stageChangedAt` — Prisma migration, set it in
+the `PATCH /api/applicants/:id/stage` handler, update the OpenAPI spec.
+**Acceptance criteria:**
+- Migration applies cleanly; existing rows get a sensible backfill value
+- A stage transition updates `stageChangedAt`; other applicant updates do not
+- OpenAPI spec reflects the new field
+- Existing stage tests still pass
+
+### PBI 6.2 — [DONE] Seed expansion
+**Description:** Append ~40 employees across departments, 6 postings, and 45
+applicants spread across the five stages with varied `appliedAt` /
+`stageChangedAt`. The four fixture users and their existing records stay
+byte-identical.
+**Acceptance criteria:**
+- Running the seed twice yields identical state (no unseeded randomness)
+- The four fixture users and their existing records are unchanged
+- Employees include a manager/reports hierarchy more than one level deep
+- Applicant distribution across stages is uneven and realistic, including at
+  least one offer older than 10 days (to exercise the aging highlight)
+
+### PBI 6.3 — Palette and dark mode tokens
+**Description:** Replace the create-next-app `globals.css` with the warm
+palette as Tailwind v4 `@theme` tokens, plus the dark token set and the
+pre-paint script in the root layout. No toggle control yet — that ships with
+the sidebar in 6.5.
+**Acceptance criteria:**
+- Semantic tokens defined (surface, panel, rail, line, ink, ink-muted, accent,
+  five stage hues with paired backgrounds) in both light and dark
+- The stale `font-family: Arial` override is gone and Geist actually applies
+- Forcing `.dark` on `<html>` re-themes the app with no per-component edits
+- No light flash on load when dark is the stored or OS preference
+
+### PBI 6.4 — UI primitives
+**Description:** `src/components/ui/` — `Button`, `Input`, `Select`, `Badge`,
+`Card`, `Table` (composable `Table`/`Th`/`Td`), `PageHeader`, `EmptyState`,
+`Skeleton`, `Avatar`. Built on 6.3's tokens, no external dependencies.
+**Acceptance criteria:**
+- Every primitive accepts and forwards `data-testid`
+- `Badge` maps each of the five stages to its own variant
+- `Avatar` derives deterministic initials and hue from a name
+- Component tests cover the above
+- Nothing is built that no screen in this epic consumes
+
+### PBI 6.5 — App shell
+**Description:** `(app)` route group with a sidebar layout, `page-auth.ts`
+(`requireSession` / `requirePermission`) replacing per-page auth boilerplate,
+permission-filtered nav, dark mode toggle, and the test ID contract test.
+**Acceptance criteria:**
+- URLs unchanged; every existing `data-testid` still resolves
+- Nav links filtered by resolved permissions (no Employees link without
+  `view_all_employees`)
+- Dark mode toggles from the sidebar, persists, defaults to OS preference
+- `requireSession` / `requirePermission` unit-tested across the
+  unauthenticated, unpermitted, and success paths
+- `testid-contract.test.ts` exists, holds the frozen ID list, and passes
+- Existing pages render inside the shell without visual rework yet
+
+### PBI 6.6 — Applicants list
+**Description:** Port `/applicants` to the design system: table with search,
+stage filter, role filter, days-in-stage column, and aging highlight on offers
+older than 10 days.
+**Acceptance criteria:**
+- `applicants-list` and `applicant-row-{id}` still resolve, on the row
+  container and rows respectively
+- Search and both filters narrow the list; combined filters compose
+- Offers aging past 10 days are visually flagged
+- Empty, loading, and error states are designed and reachable
+- New IDs added: `applicants-search`, `filter-stage`, `filter-role`
+
+### PBI 6.7 — Pipeline board
+**Description:** Five-column board at `/applicants/board` with dnd-kit
+drag-and-drop, optimistic update, and rollback on API failure.
+**Acceptance criteria:**
+- Dragging a card between columns persists the stage change
+- A failed API call rolls the card back and surfaces an error
+- Dragging works by keyboard, not only mouse
+- The detail-page `StageControl` dropdown still works unchanged
+- New IDs added: `board-column-{stage}`, `board-card-{id}`
+
+### PBI 6.8 — Applicant detail
+**Description:** Two-column detail: candidate summary, stage timeline, linked
+posting, resume link. Stage control restyled in place.
+**Acceptance criteria:**
+- Stage timeline reflects `appliedAt` and `stageChangedAt`
+- `applicant-detail`, `applicant-name`, `applicant-email`,
+  `applicant-stage`, `applicant-job-posting` all still resolve
+- `StageControl` behavior is unchanged; only its styling moves
+- Empty, loading, and error states are designed and reachable
+
+### PBI 6.9 — Job postings
+**Description:** `/job-postings` list and detail adopt the design system.
+Detail shows the posting's applicant pipeline with per-stage counts.
+**Acceptance criteria:**
+- `job-postings-list` and `job-posting-detail` still resolve
+- Detail shows applicant counts per stage, linking through to applicants
+- Open and closed postings are visually distinguishable
+- Permission gating behaves exactly as before
+- Empty, loading, and error states are designed and reachable
+
+### PBI 6.10 — Employees
+**Description:** `/employees` list and detail adopt the design system. Detail
+renders the manager/reports hierarchy, which is in the schema but currently
+invisible in the UI.
+**Acceptance criteria:**
+- `employees-list`, `employee-row-{id}`, `employee-detail`, `employee-title`,
+  `employee-department`, `employee-status` all still resolve
+- An employee's manager and direct reports are visible and navigable
+- Terminated employees are visually distinguishable from active
+- `view_all_employees` gating behaves exactly as before
+- Empty, loading, and error states are designed and reachable
+
+### PBI 6.11 — Admin and recruiter dashboards
+**Description:** Admin gets the tile row (open roles, active candidates, in
+interview, offers out) plus a stage-distribution bar. Recruiter gets open
+postings with applicant counts and an aging-offers callout.
+**Acceptance criteria:**
+- `dashboard-admin` and `dashboard-recruiter` still resolve
+- `stat-employee-count`, `stat-posting-count`, `stat-applicant-count` still
+  resolve and still report correct numbers
+- `recruiter-postings-list` still resolves
+- Neither dashboard renders data the user lacks permission to see
+- New IDs added: `stat-tile-{key}`
+
+### PBI 6.12 — Manager and employee dashboards
+**Description:** Manager gets a real reports table. Employee gets a genuine
+landing screen rather than the word "Welcome".
+**Acceptance criteria:**
+- `dashboard-manager`, `dashboard-employee`, `manager-reports-list` all still
+  resolve
+- The manager reports table links through to employee detail
+- The employee variant renders something useful with zero permissions
+- A manager with no reports gets a designed empty state
+
+### PBI 6.13 — Login
+**Description:** Split-screen login treatment — it is the first screen anyone
+sees, and it sits outside the `(app)` shell.
+**Acceptance criteria:**
+- `login-form`, `login-email`, `login-password`, `login-submit`, `login-error`
+  all preserved
+- The error state is visually designed, not raw text
+- Submitting shows a pending state and cannot be double-submitted
+- Renders correctly in both light and dark mode
+
+### PBI 6.14 — Roles admin matrix
+**Description:** `/admin/roles` becomes a permission matrix instead of a bare
+list.
+**Acceptance criteria:**
+- `roles-list` still resolves
+- The matrix shows which permissions each role grants, readable at a glance
+- Non-admins still cannot reach the screen
+- Empty, loading, and error states are designed and reachable
+
+### PBI 6.15 — Consistency sweep
+**Description:** Click every route as every role, in light and dark, at mobile
+and desktop widths. Fix inconsistencies.
+**Acceptance criteria:**
+- No route renders unstyled or half-migrated UI in any role
+- No horizontal scroll or broken layout at mobile widths
+- `testid-contract.test.ts` passes — no test ID lost across the epic
+- `npm test` and `npm run build` clean

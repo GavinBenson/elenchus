@@ -276,7 +276,13 @@ paths:
     get:
       summary: List applicants
       responses:
-        '200': { description: Array of applicants }
+        '200':
+          description: Array of applicants
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Applicant' }
         '401':
           description: Unauthenticated
           content:
@@ -315,7 +321,11 @@ paths:
       parameters:
         - { name: id, in: path, required: true, schema: { type: string } }
       responses:
-        '200': { description: Applicant }
+        '200':
+          description: Applicant
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Applicant' }
         '401':
           description: Unauthenticated
           content:
@@ -366,7 +376,11 @@ paths:
                   type: string
                   enum: [applied, interview, offer, hired, rejected]
       responses:
-        '200': { description: Updated applicant }
+        '200':
+          description: Updated applicant
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Applicant' }
         '400':
           description: Invalid stage value
           content:
@@ -491,6 +505,29 @@ components:
         HttpOnly session cookie set by /api/auth/login. Downstream routes
         derive x-user-id / x-user-permissions from this session server-side.
   schemas:
+    Applicant:
+      type: object
+      required: [id, jobPostingId, name, email, stage, appliedAt, stageChangedAt]
+      properties:
+        id: { type: string }
+        jobPostingId: { type: string }
+        name: { type: string }
+        email: { type: string, format: email }
+        resumeUrl: { type: string, format: uri, nullable: true }
+        stage:
+          type: string
+          enum: [applied, interview, offer, hired, rejected]
+        appliedAt:
+          type: string
+          format: date-time
+          description: When the candidate applied. Never changes.
+        stageChangedAt:
+          type: string
+          format: date-time
+          description: >
+            When the applicant last moved stage. Set to appliedAt on creation
+            and updated by PATCH /api/applicants/{id}/stage. Days-in-stage is
+            derived from this field.
     Error:
       type: object
       properties:

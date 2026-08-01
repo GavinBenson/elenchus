@@ -23,8 +23,11 @@ describe('proxy', () => {
     const perm = await db.permission.create({ data: { key: 'proxy-test-permission' } })
     permId = perm.id
     await db.rolePermission.create({ data: { roleId, permissionId: permId } })
+    // @scratch.test, not @elenchus.test: prisma/seed.test.ts asserts exact
+    // counts over @elenchus.test users, so leftover scratch debris from a
+    // failed run here must not be able to fail those tests instead.
     const user = await db.user.create({
-      data: { email: 'proxy-test@elenchus.test', passwordHash: 'x', roleId },
+      data: { email: 'proxy-test@scratch.test', passwordHash: 'x', roleId },
     })
     userId = user.id
   })

@@ -10,5 +10,11 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
+    // All test files share the single real database in DATABASE_URL (there is
+    // no separate test database), and prisma/seed.test.ts reseeds it by
+    // deleting and recreating every row. Running test files in parallel lets
+    // that reseed race with other files' reads/writes of the same tables, so
+    // file-level parallelism must be disabled.
+    fileParallelism: false,
   },
 })

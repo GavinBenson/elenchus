@@ -17,8 +17,11 @@ describe('permission resolution', () => {
     revokedPermId = revoked.id
     await db.rolePermission.create({ data: { roleId, permissionId: revokedPermId } })
 
+    // @scratch.test, not @elenchus.test: prisma/seed.test.ts asserts exact
+    // counts over @elenchus.test users, so leftover scratch debris from a
+    // failed run here must not be able to fail those tests instead.
     const user = await db.user.create({
-      data: { email: 'perm-test@elenchus.test', passwordHash: 'x', roleId },
+      data: { email: 'perm-test@scratch.test', passwordHash: 'x', roleId },
     })
     userId = user.id
 
