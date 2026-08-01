@@ -74,6 +74,11 @@ export const employees: SeedEmployee[] = [
   { name: 'Sipho Ndlovu', department: 'Analytics', title: 'Data Engineer', hireDate: '2024-03-11', managerName: 'Farida Haddad' },
 
   // ---- Sales ----
+  // Deliberate Unicode edge case: "O’Sullivan" uses U+2019 RIGHT SINGLE
+  // QUOTATION MARK, not an ASCII apostrophe. Kept intentionally so future
+  // name-search work has a non-ASCII name to exercise (a query typed with a
+  // plain ' must still find her). Not an accidental smart quote — do not
+  // "correct" it.
   { name: 'Grace O’Sullivan', department: 'Sales', title: 'Account Executive', hireDate: '2021-05-10', managerName: 'Anders Lindqvist' },
   { name: 'Hassan Farouk', department: 'Sales', title: 'Account Executive', hireDate: '2022-06-27', managerName: 'Anders Lindqvist' },
   { name: 'Elena Marchetti', department: 'Sales', title: 'Sales Development Representative', hireDate: '2023-09-18', managerName: 'Anders Lindqvist' },

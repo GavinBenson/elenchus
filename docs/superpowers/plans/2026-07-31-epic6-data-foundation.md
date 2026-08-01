@@ -42,8 +42,14 @@ applicant shows "400 days in stage" and the aging highlight becomes
 meaningless. Relative offsets keep the demo sensible forever.
 
 This makes the seed deterministic *within a calendar day*, which is what the
-determinism test requires. Known caveat: a test run that straddles midnight UTC
-could flake. Accepted — it is a one-second window per day.
+determinism test requires. Known caveat: a *seed run* that straddles midnight
+UTC. The risk was never a one-second assertion mismatch — `dayStart()` is called
+once per date-bearing row (50+ times per seed), so if the clock rolled over
+mid-run, some rows would anchor to one day and the rest to the next, producing
+an internally inconsistent seed (and a determinism failure spanning many rows).
+Fixed by memoising the anchor in `dates.ts`: it is computed once per process, so
+any single seed run is self-consistent regardless of when it starts. Two runs on
+opposite sides of midnight still differ — that residual window is accepted.
 
 ---
 
