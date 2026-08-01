@@ -50,4 +50,13 @@ describe('Avatar', () => {
     render(<Avatar name="Marcus Oyelaran" data-testid="a" />)
     expect(screen.getByTestId('a').getAttribute('style')).not.toBe(first)
   })
+
+  it('forwards data-testid, merges a caller className, and spreads native attributes', () => {
+    render(<Avatar name="Dana Whitfield" data-testid="a" className="h-10 w-10" id="av" />)
+    const el = screen.getByTestId('a')
+    const classes = el.className.split(' ')
+    expect(classes).toContain('h-10')
+    expect(classes).not.toContain('h-7')
+    expect(el).toHaveAttribute('id', 'av')
+  })
 })

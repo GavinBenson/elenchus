@@ -1,3 +1,6 @@
+import type { HTMLAttributes } from 'react'
+import { cn } from '@/lib/cn'
+
 /**
  * First letter of the first and last word. Middle names are skipped so
  * "Ana Beatriz Lima" reads as AL, matching how ATS tools abbreviate.
@@ -23,17 +26,20 @@ function hueFor(name: string): number {
 
 export function Avatar({
   name,
-  'data-testid': testId,
+  className = '',
+  ...props
 }: {
   name: string
-  'data-testid'?: string
-}) {
+} & HTMLAttributes<HTMLSpanElement>) {
   const hue = hueFor(name)
   return (
     <span
-      data-testid={testId}
       aria-hidden="true"
-      className="inline-flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold"
+      {...props}
+      className={cn(
+        'inline-flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold',
+        className
+      )}
       style={{
         backgroundColor: `oklch(0.88 0.05 ${hue})`,
         color: `oklch(0.35 0.08 ${hue})`,

@@ -93,6 +93,15 @@ describe('PageHeader', () => {
     expect(screen.getByRole('heading', { name: 'Employees' })).toBeInTheDocument()
     expect(screen.queryByTestId('page-subtitle')).not.toBeInTheDocument()
   })
+
+  it('forwards data-testid, merges a caller className, and spreads native attributes', () => {
+    render(<PageHeader title="Applicants" data-testid="hdr" className="pb-8" id="hdr-id" />)
+    const el = screen.getByTestId('hdr')
+    const classes = el.className.split(' ')
+    expect(classes).toContain('pb-8')
+    expect(classes).not.toContain('pb-4')
+    expect(el).toHaveAttribute('id', 'hdr-id')
+  })
 })
 
 describe('EmptyState and Skeleton', () => {
@@ -107,9 +116,11 @@ describe('EmptyState and Skeleton', () => {
     expect(screen.getByTestId('skel').children).toHaveLength(4)
   })
 
-  it('Skeleton defaults to a sensible number of rows', () => {
+  it('Skeleton defaults to the documented 5 rows', () => {
+    // Exact, not `> 0`: a default that silently dropped from 5 to 1 would still
+    // satisfy a "greater than zero" assertion while changing every loading screen.
     render(<Skeleton data-testid="skel" />)
-    expect(screen.getByTestId('skel').children.length).toBeGreaterThan(0)
+    expect(screen.getByTestId('skel').children).toHaveLength(5)
   })
 
   it('EmptyState and Skeleton forward native attributes beyond data-testid', () => {

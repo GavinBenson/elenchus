@@ -1,3 +1,6 @@
+import type { HTMLAttributes } from 'react'
+import { cn } from '@/lib/cn'
+
 export type Stage = 'applied' | 'interview' | 'offer' | 'hired' | 'rejected'
 
 const LABELS: Record<Stage, string> = {
@@ -20,15 +23,19 @@ const CLASSES: Record<Stage, string> = {
 
 export function Badge({
   stage,
-  'data-testid': testId,
+  className = '',
+  ...props
 }: {
   stage: Stage
-  'data-testid'?: string
-}) {
+} & HTMLAttributes<HTMLSpanElement>) {
   return (
     <span
-      data-testid={testId}
-      className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${CLASSES[stage]}`}
+      {...props}
+      className={cn(
+        'inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold',
+        CLASSES[stage],
+        className
+      )}
     >
       {LABELS[stage]}
     </span>

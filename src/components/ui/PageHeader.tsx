@@ -1,16 +1,22 @@
-import type { ReactNode } from 'react'
+import type { HTMLAttributes, ReactNode } from 'react'
+import { cn } from '@/lib/cn'
 
 export function PageHeader({
   title,
   subtitle,
   actions,
+  className = '',
+  ...props
 }: {
   title: string
   subtitle?: string
   actions?: ReactNode
-}) {
+} & Omit<HTMLAttributes<HTMLDivElement>, 'title'>) {
   return (
-    <div className="flex items-start justify-between gap-4 pb-4">
+    <div
+      {...props}
+      className={cn('flex items-start justify-between gap-4 pb-4', className)}
+    >
       <div>
         <h1 className="text-xl font-semibold tracking-tight text-ink">{title}</h1>
         {subtitle ? (
