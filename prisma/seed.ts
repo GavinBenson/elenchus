@@ -1,13 +1,20 @@
-import { PrismaClient } from '../src/generated/prisma/client'
-import { PrismaPg } from '@prisma/adapter-pg'
-import bcrypt from 'bcrypt'
+import { db } from '../src/lib/db'
 import { employees } from './seed-data/employees'
 import { postings } from './seed-data/postings'
 import { applicants } from './seed-data/applicants'
 import { daysAgo } from './seed-data/dates'
 
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL })
-const db = new PrismaClient({ adapter })
+/**
+ * A bcrypt hash of the literal password `password123` (cost 10), precomputed
+ * once and inlined here on purpose. `bcrypt.hash()` generates a random salt on
+ * every call, so hashing at seed time would make `User.passwordHash` differ on
+ * every run and the seed would not be deterministic. Every fixture user shares
+ * this hash; `password123` remains the login password for all of them.
+ * `prisma/seed.test.ts` asserts `bcrypt.compare('password123', ...)` holds, so
+ * this constant cannot silently rot into a hash of some other password.
+ */
+const PASSWORD123_HASH =
+  '$2b$10$LZIzbV2JQTkBZhW0RVPqQOtob7vvz/BI0DrX6SCqNhlqcWvMMA9uS'
 
 const PERMISSION_KEYS = [
   'view_all_employees',
@@ -18,6 +25,15 @@ const PERMISSION_KEYS = [
 ]
 
 export async function runSeed() {
+  // Destructive: this deletes every row in every seeded table before
+  // recreating them. Refuse to run against production, mirroring the guard on
+  // POST /api/test/reset.
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error(
+      'runSeed() is destructive (it deletes all seeded data) and is not available in production.'
+    )
+  }
+
   await db.userPermissionOverride.deleteMany()
   await db.applicant.deleteMany()
   await db.jobPosting.deleteMany()
@@ -49,7 +65,7 @@ export async function runSeed() {
   await grant(recruiterRole.id, ['edit_job_postings', 'delete_applicant'])
   await grant(employeeRole.id, [])
 
-  const passwordHash = await bcrypt.hash('password123', 10)
+  const passwordHash = PASSWORD123_HASH
 
   // Fixture accounts are founding users; their creation date is historical and
   // has no reason to drift with the calendar, so it's set explicitly here
@@ -147,6 +163,12 @@ export async function runSeed() {
     postingIdByTitle[p.title] = created.id
   }
 
+  // Applicant email and name are both natural keys here: the determinism
+  // snapshot orders applicants by email, and fixture assertions look applicants
+  // up by name. A duplicate of either makes ordering — and those lookups —
+  // arbitrary, so reject them up front.
+  const seenApplicantEmails = new Set<string>()
+  const seenApplicantNames = new Set<string>()
   for (const a of applicants) {
     const jobPostingId = postingIdByTitle[a.postingTitle]
     if (!jobPostingId) {
@@ -154,6 +176,14 @@ export async function runSeed() {
         `Seed data error: applicant "${a.name}" references unknown posting "${a.postingTitle}".`
       )
     }
+    if (seenApplicantEmails.has(a.email)) {
+      throw new Error(`Seed data error: duplicate applicant email "${a.email}".`)
+    }
+    if (seenApplicantNames.has(a.name)) {
+      throw new Error(`Seed data error: duplicate applicant name "${a.name}".`)
+    }
+    seenApplicantEmails.add(a.email)
+    seenApplicantNames.add(a.name)
     await db.applicant.create({
       data: {
         jobPostingId,

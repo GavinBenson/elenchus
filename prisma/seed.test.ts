@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import bcrypt from 'bcrypt'
 import { db } from '../src/lib/db'
 import { runSeed } from './seed'
 import { dayStart } from './seed-data/dates'
@@ -40,7 +41,21 @@ describe('seed — fixture preservation', () => {
     const expected = dayStart()
     expect(alex.appliedAt.toISOString()).toBe(expected.toISOString())
     expect(alex.stageChangedAt.toISOString()).toBe(expected.toISOString())
-    expect(alex.appliedAt.toISOString()).toBe(alex.stageChangedAt.toISOString())
+  })
+
+  it('hashes password123 for every fixture user', async () => {
+    const users = await db.user.findMany({
+      where: { email: { endsWith: '@elenchus.test' } },
+      orderBy: { email: 'asc' },
+    })
+    expect(users).toHaveLength(4)
+    for (const user of users) {
+      // The seed inlines a precomputed bcrypt hash so it stays deterministic;
+      // this proves that constant is still a hash of password123.
+      await expect(
+        bcrypt.compare('password123', user.passwordHash)
+      ).resolves.toBe(true)
+    }
   })
 
   it('keeps the four fixture users', async () => {
@@ -181,6 +196,19 @@ describe('seed — postings and applicants', () => {
       )
     }
   })
+
+  it('never lets an applicant apply before their posting existed', async () => {
+    const applicants = await db.applicant.findMany({
+      include: { jobPosting: true },
+    })
+    expect(applicants.length).toBeGreaterThan(0)
+    for (const a of applicants) {
+      expect(
+        a.appliedAt.getTime(),
+        `${a.name} applied to "${a.jobPosting.title}" before it was posted`
+      ).toBeGreaterThanOrEqual(a.jobPosting.createdAt.getTime())
+    }
+  })
 })
 
 describe('seed — determinism', () => {
@@ -205,13 +233,29 @@ describe('seed — determinism', () => {
       include: { jobPosting: true },
       orderBy: [{ email: 'asc' }],
     })
+    const roles = await db.role.findMany({
+      include: { permissions: { include: { permission: true } } },
+      orderBy: { name: 'asc' },
+    })
+    const permissions = await db.permission.findMany({
+      orderBy: { key: 'asc' },
+    })
 
     return {
       users: users.map((u) => ({
         email: u.email,
         role: u.role.name,
+        // Covered here so a nondeterministic password hash cannot hide.
+        passwordHash: u.passwordHash,
         createdAt: u.createdAt.toISOString(),
       })),
+      roles: roles.map((r) => ({
+        name: r.name,
+        permissions: r.permissions
+          .map((rp) => rp.permission.key)
+          .sort((a, b) => a.localeCompare(b)),
+      })),
+      permissions: permissions.map((p) => p.key),
       employees: employees.map((e) => ({
         name: e.name,
         department: e.department,
