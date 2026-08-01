@@ -4,14 +4,14 @@ import { db } from '../src/lib/db'
 import { runSeed } from './seed'
 import { dayStart } from './seed-data/dates'
 
+afterAll(async () => {
+  await db.$disconnect()
+})
+
 describe('seed — fixture preservation', () => {
   beforeAll(async () => {
     await runSeed()
   }, 60_000)
-
-  afterAll(async () => {
-    await db.$disconnect()
-  })
 
   it('produces the exact expected record counts', async () => {
     const [userCount, employeeCount, postingCount, applicantCount] = await Promise.all([
@@ -240,6 +240,10 @@ describe('seed — determinism', () => {
     const permissions = await db.permission.findMany({
       orderBy: { key: 'asc' },
     })
+    const permissionOverrides = await db.userPermissionOverride.findMany({
+      include: { user: true, permission: true },
+      orderBy: [{ user: { email: 'asc' } }, { permission: { key: 'asc' } }],
+    })
 
     return {
       users: users.map((u) => ({
@@ -256,6 +260,15 @@ describe('seed — determinism', () => {
           .sort((a, b) => a.localeCompare(b)),
       })),
       permissions: permissions.map((p) => p.key),
+      // Zero rows today — this table is deleted and recreated by the seed
+      // but nothing ever populates it, so it should always project to an
+      // empty array. Included so a future regression that leaves it
+      // non-empty (or that the seed forgets to clear) is caught here rather
+      // than by an untested table silently drifting.
+      permissionOverrides: permissionOverrides.map((o) => ({
+        userEmail: o.user.email,
+        permissionKey: o.permission.key,
+      })),
       employees: employees.map((e) => ({
         name: e.name,
         department: e.department,

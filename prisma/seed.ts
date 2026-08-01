@@ -2,7 +2,7 @@ import { db } from '../src/lib/db'
 import { employees } from './seed-data/employees'
 import { postings } from './seed-data/postings'
 import { applicants } from './seed-data/applicants'
-import { daysAgo } from './seed-data/dates'
+import { daysAgo, resetDayAnchor } from './seed-data/dates'
 
 /**
  * A bcrypt hash of the literal password `password123` (cost 10), precomputed
@@ -33,6 +33,11 @@ export async function runSeed() {
       'runSeed() is destructive (it deletes all seeded data) and is not available in production.'
     )
   }
+
+  // Re-read the clock for this run before anything else. See the comment
+  // above `anchor` in seed-data/dates.ts for why this must happen per run
+  // rather than once per process.
+  resetDayAnchor()
 
   await db.userPermissionOverride.deleteMany()
   await db.applicant.deleteMany()
