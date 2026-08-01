@@ -130,3 +130,54 @@ verified. See [backlog.md](backlog.md) for feature PBIs.
 - A JWT for a since-deleted user still produces a valid `x-user-id`
   header (empty permission set), so routes gated on `userId` alone still
   admit it. Pre-existing, not introduced by this fix wave.
+
+## Epic 6 — PBIs 6.1 & 6.2 (data foundation), 2026-07-31
+
+Found and fixed on branch `epic-6-data-foundation` before merge:
+
+- **The seed was not deterministic, three times over, and the test that
+  existed to prove determinism could not detect any of it.** Each defect was
+  the same class — a column the seed wrote that `snapshot()` omitted:
+  `JobPosting.createdAt` (`@default(now())`, never set), then
+  `User.createdAt` (same, and the snapshot had no users collection at all),
+  then `User.passwordHash` (bcrypt generates a random salt per call). Each
+  was caught by a later review round, not by the test suite. Fixed by
+  seeding every `@default(now())` column explicitly, precomputing the bcrypt
+  hash as a constant, and projecting every non-`id` column the seed writes.
+- **`npm test` would wipe whatever `DATABASE_URL` pointed at**, unguarded —
+  `prisma/seed.test.ts` reseeds in `beforeAll` and `runSeed()` opens with
+  eight unconditional `deleteMany()` calls. Now throws on
+  `NODE_ENV === 'production'`, matching the `/api/test/reset` convention.
+- **A no-op stage PATCH reset `stageChangedAt`**, zeroing days-in-stage when
+  someone re-selected an applicant's current stage. Now preserved when
+  `existing.stage === body.stage`.
+- **`src/app/api/applicants/stage.test.ts` could not run standalone** — it
+  depended on `prisma/seed.test.ts` running first to create the user it
+  looks up. Now self-seeds.
+- **The day anchor was memoised per process rather than per seed run.**
+  Introduced while fixing a midnight-rollover inconsistency; because
+  `/api/test/reset` calls `runSeed()` inside a long-lived server, a server
+  booted Monday would reseed Friday with Monday's anchor, silently breaking
+  the "applied today" invariant. Rescoped to per-run.
+
+### Carried tech debt — not fixed, tracked for follow-up
+
+- **There is no separate test database.** Every test file runs against
+  `DATABASE_URL`, and `prisma/seed.test.ts` wipes and reseeds it mid-suite.
+  This corrupted concurrently-running test files, making `npm test` fail
+  differently on every run; mitigated with `fileParallelism: false` in
+  `vitest.config.ts`, which serialises test files. That is a mitigation, not
+  a cure — a running dev server, a manual `prisma db seed`, or two
+  concurrent `npm test` invocations can still corrupt a run, and every new
+  test file is now implicitly order-dependent around the reseed. **The real
+  fix is a dedicated test `DATABASE_URL` (or per-test transaction
+  rollback), and it should land before Epic 2's Playwright suite adds more
+  database-touching tests.** This is the top follow-up item for Epic 6.
+- The destructive-seed guard keys on `NODE_ENV`; an unset `NODE_ENV` in a
+  deployment gets no protection. A positive opt-in flag would be safer.
+- Rotating the fixture password now requires regenerating the bcrypt
+  constant by hand. The `bcrypt.compare` assertion prevents silent rot but
+  there is no script.
+- `prisma/seed-data/employees.ts` has `Grace O’Sullivan` with a curly
+  apostrophe (U+2019), commented as a deliberate Unicode edge case. Name
+  search in PBIs 6.6 / 6.10 must not exact-match a straight apostrophe.
