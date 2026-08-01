@@ -162,7 +162,7 @@ byte-identical.
 - Applicant distribution across stages is uneven and realistic, including at
   least one offer older than 10 days (to exercise the aging highlight)
 
-### PBI 6.3 — Palette and dark mode tokens
+### PBI 6.3 — [DONE] Palette and dark mode tokens
 **Description:** Replace the create-next-app `globals.css` with the warm
 palette as Tailwind v4 `@theme` tokens, plus the dark token set and the
 pre-paint script in the root layout. No toggle control yet — that ships with
@@ -174,7 +174,7 @@ the sidebar in 6.5.
 - Forcing `.dark` on `<html>` re-themes the app with no per-component edits
 - No light flash on load when dark is the stored or OS preference
 
-### PBI 6.4 — UI primitives
+### PBI 6.4 — [DONE] UI primitives
 **Description:** `src/components/ui/` — `Button`, `Input`, `Select`, `Badge`,
 `Card`, `Table` (composable `Table`/`Th`/`Td`), `PageHeader`, `EmptyState`,
 `Skeleton`, `Avatar`. Built on 6.3's tokens, no external dependencies.
@@ -185,7 +185,7 @@ the sidebar in 6.5.
 - Component tests cover the above
 - Nothing is built that no screen in this epic consumes
 
-### PBI 6.5 — App shell
+### PBI 6.5 — [DONE] App shell
 **Description:** `(app)` route group with a sidebar layout, `page-auth.ts`
 (`requireSession` / `requirePermission`) replacing per-page auth boilerplate,
 permission-filtered nav, dark mode toggle, and the test ID contract test.
