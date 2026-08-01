@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes } from 'react'
+import { cn } from '@/lib/cn'
 
 const VARIANTS = {
   primary: 'bg-accent text-accent-contrast border-accent font-semibold',
@@ -15,7 +16,11 @@ export function Button({
   return (
     <button
       {...props}
-      className={`rounded-lg border px-3 py-1.5 text-sm transition-opacity hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-50 ${VARIANTS[variant]} ${className}`}
+      className={cn(
+        'rounded-lg border px-3 py-1.5 text-sm transition-opacity hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-50',
+        VARIANTS[variant],
+        className
+      )}
     />
   )
 }

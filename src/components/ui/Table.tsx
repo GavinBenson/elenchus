@@ -1,4 +1,5 @@
 import type { HTMLAttributes, TableHTMLAttributes, ThHTMLAttributes, TdHTMLAttributes } from 'react'
+import { cn } from '@/lib/cn'
 
 /**
  * Composable rather than config-driven: callers write their own <thead> and
@@ -12,7 +13,7 @@ export function Table({
   return (
     <table
       {...props}
-      className={`w-full border-collapse text-sm text-ink ${className}`}
+      className={cn('w-full border-collapse text-sm text-ink', className)}
     />
   )
 }
@@ -24,7 +25,10 @@ export function Th({
   return (
     <th
       {...props}
-      className={`border-y border-line px-4 py-2 text-left text-[10px] font-semibold uppercase tracking-wider text-ink-muted ${className}`}
+      className={cn(
+        'border-y border-line px-4 py-2 text-left text-[10px] font-semibold uppercase tracking-wider text-ink-muted',
+        className
+      )}
     />
   )
 }
@@ -36,7 +40,7 @@ export function Td({
   return (
     <td
       {...props}
-      className={`border-b border-line px-4 py-3 align-middle ${className}`}
+      className={cn('border-b border-line px-4 py-3 align-middle', className)}
     />
   )
 }
@@ -47,5 +51,5 @@ export function TableWrapper({
 }: HTMLAttributes<HTMLDivElement>) {
   // Wide tables scroll inside their own container so the page body never
   // scrolls horizontally on narrow viewports.
-  return <div {...props} className={`overflow-x-auto ${className}`} />
+  return <div {...props} className={cn('overflow-x-auto', className)} />
 }

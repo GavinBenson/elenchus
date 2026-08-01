@@ -111,4 +111,56 @@ describe('EmptyState and Skeleton', () => {
     render(<Skeleton data-testid="skel" />)
     expect(screen.getByTestId('skel').children.length).toBeGreaterThan(0)
   })
+
+  it('EmptyState and Skeleton forward native attributes beyond data-testid', () => {
+    render(
+      <div>
+        <EmptyState title="No applicants" data-testid="empty" id="empty-id" />
+        <Skeleton data-testid="skel" id="skel-id" />
+      </div>
+    )
+    expect(screen.getByTestId('empty')).toHaveAttribute('id', 'empty-id')
+    expect(screen.getByTestId('skel')).toHaveAttribute('id', 'skel-id')
+  })
+})
+
+describe('className overrides via cn/tailwind-merge', () => {
+  it('Button: a conflicting caller className wins over the base class in the same group', () => {
+    render(
+      <Button data-testid="btn" className="px-8">
+        Go
+      </Button>
+    )
+    const classes = screen.getByTestId('btn').className.split(' ')
+    expect(classes).toContain('px-8')
+    expect(classes).not.toContain('px-3')
+  })
+
+  it('Button: a non-conflicting caller className is preserved alongside base classes', () => {
+    render(
+      <Button data-testid="btn" className="w-full">
+        Go
+      </Button>
+    )
+    const classes = screen.getByTestId('btn').className.split(' ')
+    expect(classes).toContain('w-full')
+    expect(classes).toContain('rounded-lg')
+  })
+
+  it('Td: a conflicting caller className wins over the base padding class', () => {
+    render(
+      <table>
+        <tbody>
+          <tr>
+            <Td data-testid="td" className="px-8">
+              Dana
+            </Td>
+          </tr>
+        </tbody>
+      </table>
+    )
+    const classes = screen.getByTestId('td').className.split(' ')
+    expect(classes).toContain('px-8')
+    expect(classes).not.toContain('px-4')
+  })
 })

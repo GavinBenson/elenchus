@@ -1,12 +1,15 @@
+import type { HTMLAttributes } from 'react'
+import { cn } from '@/lib/cn'
+
 export function Skeleton({
   rows = 5,
-  'data-testid': testId,
+  className = '',
+  ...props
 }: {
   rows?: number
-  'data-testid'?: string
-}) {
+} & HTMLAttributes<HTMLDivElement>) {
   return (
-    <div data-testid={testId} className="space-y-2">
+    <div {...props} className={cn('space-y-2', className)}>
       {Array.from({ length: rows }, (_, i) => (
         <div key={i} className="h-9 animate-pulse rounded-lg bg-rail" />
       ))}

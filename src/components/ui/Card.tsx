@@ -1,4 +1,5 @@
 import type { HTMLAttributes } from 'react'
+import { cn } from '@/lib/cn'
 
 export function Card({
   className = '',
@@ -7,7 +8,7 @@ export function Card({
   return (
     <div
       {...props}
-      className={`rounded-xl border border-line bg-panel p-4 ${className}`}
+      className={cn('rounded-xl border border-line bg-panel p-4', className)}
     />
   )
 }
