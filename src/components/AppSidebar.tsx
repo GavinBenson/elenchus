@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { NavItem } from '@/lib/nav'
 import { THEME_STORAGE_KEY, type Theme } from '@/lib/theme'
 
@@ -17,25 +17,16 @@ export function AppSidebar({
 }) {
   const pathname = usePathname()
   const router = useRouter()
-  const [theme, setTheme] = useState<Theme>('light')
   const [signingOut, setSigningOut] = useState(false)
 
-  // The pre-paint script in the root layout already set the class; read it
-  // back rather than recomputing, so the toggle starts in the right position.
-  useEffect(() => {
-    setTheme(document.documentElement.classList.contains('dark') ? 'dark' : 'light')
-  }, [])
-
   function toggleTheme() {
-    // Read the DOM directly rather than trusting `theme` state: a click that
-    // lands before the mount effect above has committed would otherwise
-    // compute the next theme from the wrong ('light') base and desync state
-    // from the actual DOM class.
+    // The DOM class is the single source of truth: the pre-paint script in the
+    // root layout sets it before React runs, so there is no React state to keep
+    // in sync and nothing that can disagree with what the user is looking at.
     const current: Theme = document.documentElement.classList.contains('dark')
       ? 'dark'
       : 'light'
     const next: Theme = current === 'dark' ? 'light' : 'dark'
-    setTheme(next)
     document.documentElement.classList.toggle('dark', next === 'dark')
     try {
       localStorage.setItem(THEME_STORAGE_KEY, next)
@@ -99,10 +90,14 @@ export function AppSidebar({
           type="button"
           data-testid="theme-toggle"
           onClick={toggleTheme}
-          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          aria-label="Toggle colour scheme"
           className="w-full rounded-lg px-2.5 py-1.5 text-left text-[13px] text-ink-muted hover:text-ink"
         >
-          {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+          {/* The label is chosen by CSS, not React state: the current theme is
+              unknowable during server rendering, so deriving it from state
+              would render the wrong text until hydration. */}
+          <span className="dark:hidden">Dark mode</span>
+          <span className="hidden dark:inline">Light mode</span>
         </button>
         <button
           type="button"
