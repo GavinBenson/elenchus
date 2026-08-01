@@ -17,5 +17,6 @@ export default defineConfig({
     // All test files share the single real database in DATABASE_URL, and
     // prisma/seed.test.ts reseeds it, so files must not run concurrently.
     fileParallelism: false,
+    setupFiles: ['./src/test/setup.ts'],
   },
 })
