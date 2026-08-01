@@ -25,8 +25,19 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <script
+          // Runs before first paint so a dark-mode user never sees a white
+          // flash. Inlined deliberately: an external script would load too
+          // late to prevent it. Kept in sync with resolveInitialTheme().
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var s=localStorage.getItem('elenchus-theme');var t=(s==='light'||s==='dark')?s:(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');if(t==='dark')document.documentElement.classList.add('dark');}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
