@@ -1,13 +1,10 @@
-import { cookies } from 'next/headers'
-import { notFound, redirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import { db } from '@/lib/db'
-import { verifySession, SESSION_COOKIE } from '@/lib/auth'
+import { requireSession } from '@/lib/page-auth'
 import StageControl from './StageControl'
 
 export default async function ApplicantDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const token = (await cookies()).get(SESSION_COOKIE)?.value
-  const session = token ? verifySession(token) : null
-  if (!session) redirect('/login')
+  await requireSession()
 
   const { id } = await params
   const applicant = await db.applicant.findUnique({ where: { id }, include: { jobPosting: true } })

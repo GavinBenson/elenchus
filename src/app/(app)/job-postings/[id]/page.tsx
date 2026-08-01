@@ -1,14 +1,11 @@
-import { cookies } from 'next/headers'
-import { notFound, redirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import { db } from '@/lib/db'
-import { verifySession, SESSION_COOKIE } from '@/lib/auth'
+import { requireSession } from '@/lib/page-auth'
 
 const STAGES = ['applied', 'interview', 'offer', 'hired', 'rejected'] as const
 
 export default async function JobPostingDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const token = (await cookies()).get(SESSION_COOKIE)?.value
-  const session = token ? verifySession(token) : null
-  if (!session) redirect('/login')
+  await requireSession()
 
   const { id } = await params
   const posting = await db.jobPosting.findUnique({ where: { id }, include: { applicants: true } })
