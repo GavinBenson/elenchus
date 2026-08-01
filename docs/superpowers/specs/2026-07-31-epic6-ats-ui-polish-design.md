@@ -31,7 +31,8 @@ Tailwind template) and enterprise-dense grey/navy (most domain-authentic, but
 visually generic). The hybrid keeps the domain signal while staying
 distinctive.
 
-Accent is rust `#8a5a2b` on a `#fffdfa` ground with `#f7f1e8` panels. Stage
+Accent is rust `#8a5a2b` on a `#fffdfa` page ground, with `#ffffff` panels
+(cards, table rows) and a `#f7f1e8` rail (sidebar). Stage
 badges get five distinct hues rather than one flat accent, so a column of them
 scans at a glance.
 

@@ -36,7 +36,8 @@ Vitest, Prisma 7.9.
   affect URLs — that is why they are used here.
 - Redirect behaviour must not change: unauthenticated users go to `/login`,
   users lacking the required permission go to `/dashboard`.
-- Accent colour is `#8a5a2b` on a `#fffdfa` ground with `#f7f1e8` panels. The
+- Accent colour is `#8a5a2b` on a `#fffdfa` page ground, with `#ffffff` panels
+  (cards, table rows) and a `#f7f1e8` rail (sidebar). The
   dark ground is a warm-tinted near-black, not neutral grey.
 - No new runtime dependencies in these three PBIs. `@dnd-kit/core` arrives in
   PBI 6.7, not here.
