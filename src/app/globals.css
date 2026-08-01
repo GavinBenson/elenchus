@@ -1,26 +1,68 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/*
+ * Class-based dark mode. Tailwind v4 defaults the `dark:` variant to the OS
+ * media query; we override it so a `.dark` class on <html> drives theming,
+ * which is what lets the sidebar toggle override the OS preference.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+@theme {
+  /* Warm product palette. Semantic names only — dark mode swaps the values,
+     never the component classes. */
+  --color-surface: #fffdfa;
+  --color-panel: #ffffff;
+  --color-rail: #f7f1e8;
+  --color-line: #ece1d2;
+  --color-ink: #2b2622;
+  --color-ink-muted: #6f5e49;
+  --color-accent: #8a5a2b;
+  --color-accent-contrast: #ffffff;
+
+  /* One hue per pipeline stage, so a column of badges scans at a glance. */
+  --color-stage-applied: #6b5d4d;
+  --color-stage-applied-bg: #f0ebe1;
+  --color-stage-interview: #8a5a2b;
+  --color-stage-interview-bg: #efe6d6;
+  --color-stage-offer: #3f6470;
+  --color-stage-offer-bg: #e8eef0;
+  --color-stage-hired: #4a6b40;
+  --color-stage-hired-bg: #e3ecdf;
+  --color-stage-rejected: #9a5344;
+  --color-stage-rejected-bg: #f2e4e0;
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/*
+ * Dark counterparts. The ground is a warm-tinted near-black rather than the
+ * light palette inverted to neutral grey — inverting to grey loses the
+ * palette's identity entirely.
+ */
+.dark {
+  --color-surface: #17130f;
+  --color-panel: #1e1815;
+  --color-rail: #14100d;
+  --color-line: #2e2621;
+  --color-ink: #f0e9e1;
+  --color-ink-muted: #a1907c;
+  --color-accent: #c88a4a;
+  --color-accent-contrast: #17130f;
+
+  --color-stage-applied: #c4b5a2;
+  --color-stage-applied-bg: #2a231d;
+  --color-stage-interview: #d99a5b;
+  --color-stage-interview-bg: #33261a;
+  --color-stage-offer: #8fb3bf;
+  --color-stage-offer-bg: #1c2a2f;
+  --color-stage-hired: #9dc48f;
+  --color-stage-hired-bg: #1e2a1b;
+  --color-stage-rejected: #d99387;
+  --color-stage-rejected-bg: #31201d;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-surface);
+  color: var(--color-ink);
 }
