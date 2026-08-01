@@ -1,8 +1,24 @@
+import { cache } from 'react'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { db } from '@/lib/db'
 import { verifySession, SESSION_COOKIE } from '@/lib/auth'
 import { resolveEffectivePermissions, hasPermission } from '@/lib/permissions'
+
+// Deduplicated within a single request: the layout and each page both call
+// requireSession(), which would otherwise re-run these two lookups. Only the
+// lookups are cached, not requireSession itself, so the redirect() throw
+// inside requireSession stays outside any cached function.
+const getUserById = cache((userId: string) =>
+  db.user.findUnique({
+    where: { id: userId },
+    include: { role: true },
+  })
+)
+
+const getEffectivePermissions = cache((userId: string) =>
+  resolveEffectivePermissions(userId)
+)
 
 /**
  * Resolves the logged-in user for a page, redirecting to /login if there is
@@ -14,14 +30,11 @@ export async function requireSession() {
   const session = token ? verifySession(token) : null
   if (!session) redirect('/login')
 
-  const user = await db.user.findUnique({
-    where: { id: session.userId },
-    include: { role: true },
-  })
+  const user = await getUserById(session.userId)
   // A token can outlive its user; treat that as unauthenticated.
   if (!user) redirect('/login')
 
-  const permissions = await resolveEffectivePermissions(user.id)
+  const permissions = await getEffectivePermissions(user.id)
   return { user, permissions }
 }
 

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import type { NavItem } from '@/lib/nav'
 import { THEME_STORAGE_KEY, type Theme } from '@/lib/theme'
@@ -16,7 +16,9 @@ export function AppSidebar({
   roleName: string
 }) {
   const pathname = usePathname()
+  const router = useRouter()
   const [theme, setTheme] = useState<Theme>('light')
+  const [signingOut, setSigningOut] = useState(false)
 
   // The pre-paint script in the root layout already set the class; read it
   // back rather than recomputing, so the toggle starts in the right position.
@@ -25,7 +27,14 @@ export function AppSidebar({
   }, [])
 
   function toggleTheme() {
-    const next: Theme = theme === 'dark' ? 'light' : 'dark'
+    // Read the DOM directly rather than trusting `theme` state: a click that
+    // lands before the mount effect above has committed would otherwise
+    // compute the next theme from the wrong ('light') base and desync state
+    // from the actual DOM class.
+    const current: Theme = document.documentElement.classList.contains('dark')
+      ? 'dark'
+      : 'light'
+    const next: Theme = current === 'dark' ? 'light' : 'dark'
     setTheme(next)
     document.documentElement.classList.toggle('dark', next === 'dark')
     try {
@@ -33,6 +42,21 @@ export function AppSidebar({
     } catch {
       // Storage can be unavailable (private mode); the toggle still works for
       // this session, it just will not persist.
+    }
+  }
+
+  async function handleSignOut() {
+    setSigningOut(true)
+    // Navigate to /login regardless of outcome: if the request failed the
+    // session is unusable either way, and there is nothing useful to show
+    // the user by staying put.
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' })
+    } catch {
+      // Network failure — fall through to navigation below.
+    } finally {
+      router.push('/login')
+      router.refresh()
     }
   }
 
@@ -80,15 +104,15 @@ export function AppSidebar({
         >
           {theme === 'dark' ? 'Light mode' : 'Dark mode'}
         </button>
-        <form action="/api/auth/logout" method="post">
-          <button
-            type="submit"
-            data-testid="logout-button"
-            className="w-full rounded-lg px-2.5 py-1.5 text-left text-[13px] text-ink-muted hover:text-ink"
-          >
-            Sign out
-          </button>
-        </form>
+        <button
+          type="button"
+          data-testid="logout-button"
+          onClick={handleSignOut}
+          disabled={signingOut}
+          className="w-full rounded-lg px-2.5 py-1.5 text-left text-[13px] text-ink-muted hover:text-ink disabled:opacity-50"
+        >
+          Sign out
+        </button>
       </div>
     </nav>
   )
