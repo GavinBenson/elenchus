@@ -138,6 +138,9 @@ describe('data-testid contract', () => {
 
   it('never drops a nav test id', () => {
     const ids = navItemsFor(ALL_PERMISSIONS).map((i) => i.testId)
-    expect(ids).toEqual(FROZEN_NAV_TEST_IDS)
+    // Order-insensitive: a later PBI may reorder the sidebar without that
+    // being a contract breach. Only a dropped id should fail this test.
+    expect(new Set(ids)).toEqual(new Set(FROZEN_NAV_TEST_IDS))
+    expect(ids).toHaveLength(FROZEN_NAV_TEST_IDS.length)
   })
 })

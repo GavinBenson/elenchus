@@ -90,7 +90,6 @@ export function AppSidebar({
           type="button"
           data-testid="theme-toggle"
           onClick={toggleTheme}
-          aria-label="Toggle colour scheme"
           className="w-full rounded-lg px-2.5 py-1.5 text-left text-[13px] text-ink-muted hover:text-ink"
         >
           {/* The label is chosen by CSS, not React state: the current theme is
