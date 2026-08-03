@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useTransition } from 'react'
+import { useEffect, useRef, useState, useTransition } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
@@ -39,11 +39,24 @@ export function ApplicantFilters({
   // navigation.
   const [query, setQuery] = useState(filters.query)
 
+  /**
+   * A pending debounce timer holds whatever `filters` were current when it was
+   * scheduled. Reading them through a ref rather than through the closure means
+   * a stage picked during those 250ms is not silently reverted when the timer
+   * fires — which is exactly what happened before, because the effect's deps
+   * do not include the filters it reads.
+   */
+  const filtersRef = useRef(filters)
+  useEffect(() => {
+    filtersRef.current = filters
+  }, [filters])
+
   function navigate(next: { query?: string; stage?: string; posting?: string }) {
     const params = new URLSearchParams()
+    const current = filtersRef.current
     const q = next.query ?? query
-    const stage = next.stage ?? filters.stage ?? ''
-    const posting = next.posting ?? filters.postingId ?? ''
+    const stage = next.stage ?? current.stage ?? ''
+    const posting = next.posting ?? current.postingId ?? ''
 
     if (q) params.set('q', q)
     if (stage) params.set('stage', stage)
@@ -60,8 +73,9 @@ export function ApplicantFilters({
     if (query === filters.query) return
     const timer = setTimeout(() => navigate({ query }), SEARCH_DEBOUNCE_MS)
     return () => clearTimeout(timer)
-    // `navigate` closes over the current filters; re-running on every filter
-    // change would re-issue the search that produced them.
+    // Deliberately keyed on the query alone: re-running when a filter changes
+    // would re-issue the search that produced it. `navigate` reads the other
+    // filters through filtersRef, so it stays correct without being a dep.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, filters.query])
 

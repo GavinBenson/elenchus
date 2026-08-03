@@ -119,6 +119,32 @@ describe('ApplicantFilters — search debounce', () => {
     expect(replaceMock).toHaveBeenCalledWith('/applicants?q=grace', { scroll: false })
   })
 
+  it('keeps a stage picked while the search was still debouncing', async () => {
+    // Regression: the pending timer held the filters that were current when it
+    // was scheduled, and the effect's deps do not include them — so a stage
+    // picked inside the debounce window was silently reverted when the timer
+    // fired. The rerender below is what the server does after the stage
+    // navigation lands.
+    const { rerender } = renderFilters()
+
+    fireEvent.change(screen.getByTestId('applicants-search'), { target: { value: 'grace' } })
+    fireEvent.change(screen.getByTestId('filter-stage'), { target: { value: 'offer' } })
+    rerender(
+      <ApplicantFilters
+        filters={{ ...NO_FILTERS, stage: 'offer' }}
+        postings={POSTINGS}
+      />
+    )
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(250)
+    })
+
+    expect(replaceMock).toHaveBeenLastCalledWith('/applicants?q=grace&stage=offer', {
+      scroll: false,
+    })
+  })
+
   it('does not navigate when the box already matches the URL', async () => {
     renderFilters({ query: 'grace' })
 

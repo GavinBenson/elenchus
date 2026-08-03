@@ -196,6 +196,17 @@ Found and fixed on branch `epic-6-data-foundation` before merge:
   everything else by most recent activity. Done in memory because "aging" is a
   function of the request's clock rather than a stored column.
 
+- **A stage picked while the search was still debouncing was silently
+  reverted.** Found in review of the 6.6 branch before merge. The debounce
+  effect is keyed on `[query, filters.query]`, but the `navigate` it schedules
+  also read `filters.stage` and `filters.postingId` through its closure. Change
+  a filter inside the 250ms window and the effect does not re-run, so the
+  pending timer fires with the filters as they were before the change and drops
+  it. Fixed by reading the other filters through a ref, so the timer always
+  sees current values without the search re-firing on every filter change.
+  Regression test added and confirmed non-vacuous: reverting to the closure
+  read fails that test and only that test.
+
 ### Found, not fixed — deferred with a reason
 
 - **The app shell does not collapse at mobile widths.** Found while verifying
