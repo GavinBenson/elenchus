@@ -228,10 +228,12 @@ Found and fixed on branch `epic-6-data-foundation` before merge:
   introduced by 6.6 — it is a PBI 6.5 shell gap that only became visible once a
   screen had real content in it. Fixing it means designing a mobile nav
   affordance (off-canvas drawer or a collapsed icon rail), which is a shell
-  decision rather than a list-screen one, so it is deferred to **PBI 6.15**,
-  whose acceptance criteria already include "no horizontal scroll or broken
-  layout at mobile widths". Every screen PBI between here and 6.15 inherits
-  the same defect.
+  decision rather than a list-screen one.
+  **Promoted to its own PBI (2026-08-02):** originally deferred into the
+  consistency sweep, but a sweep that also has to design the navigation is not
+  a sweep, and every screen inherits whatever affordance is chosen. It is now
+  **PBI 6.15 — Responsive app shell**, with the sweep renumbered to 6.16.
+  Every screen PBI built between 6.6 and 6.15 inherits the defect until then.
 
 ## Epic 6 — PBI 6.7 (pipeline board), 2026-08-02
 
