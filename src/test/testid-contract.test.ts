@@ -54,6 +54,8 @@ const FROZEN_TEST_IDS = [
   'empty-state',
   'loading-skeleton',
   'error-state',
+  // Added by the pipeline board (PBI 6.7).
+  'board-error',
 ]
 
 /**
@@ -68,6 +70,9 @@ const FROZEN_TEMPLATES = [
   'pipeline-column-${',
   'applicant-card-${',
   'posting-row-${',
+  // Added by the pipeline board (PBI 6.7).
+  'board-column-${',
+  'board-card-${',
 ]
 
 /**
