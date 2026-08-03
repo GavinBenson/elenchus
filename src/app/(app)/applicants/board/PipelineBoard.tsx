@@ -212,6 +212,12 @@ export function PipelineBoard({ initialApplicants }: { initialApplicants: BoardA
       ) : null}
 
       <DndContext
+        // Without an explicit id, dnd-kit derives the aria-describedby it puts
+        // on every card from an incrementing per-instance counter. The server
+        // and the client start that counter from different points, so every
+        // card hydrates with a mismatched attribute and React logs a hydration
+        // error on the busiest screen in the app.
+        id="pipeline-board"
         sensors={sensors}
         collisionDetection={closestCorners}
         onDragStart={handleDragStart}
