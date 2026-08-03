@@ -308,7 +308,7 @@ landing screen rather than the word "Welcome".
 - The employee variant renders something useful with zero permissions
 - A manager with no reports gets a designed empty state
 
-### PBI 6.13 — Login
+### PBI 6.13 — [DONE] Login
 **Description:** Split-screen login treatment — it is the first screen anyone
 sees, and it sits outside the `(app)` shell.
 Includes one-click demo sign-in: a reader landing on this app cold should not

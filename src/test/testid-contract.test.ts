@@ -85,6 +85,8 @@ const FROZEN_TEMPLATES = [
   // Added by the pipeline board (PBI 6.7).
   'board-column-${',
   'board-card-${',
+  // Added by the login screen (PBI 6.13).
+  'demo-login-${',
 ]
 
 /**
