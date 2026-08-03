@@ -47,6 +47,13 @@ const FROZEN_TEST_IDS = [
   'logout-button',
   // Added by the UI primitives (PBI 6.4).
   'page-subtitle',
+  // Added by the applicants list (PBI 6.6).
+  'applicants-search',
+  'filter-stage',
+  'filter-role',
+  'empty-state',
+  'loading-skeleton',
+  'error-state',
 ]
 
 /**

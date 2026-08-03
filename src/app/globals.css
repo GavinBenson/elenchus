@@ -31,6 +31,11 @@
   --color-stage-rejected: #9a5344;
   --color-stage-rejected-bg: #f2e4e0;
 
+  /* Attention state — an offer left outstanding too long. Distinct from the
+     rejected hue on purpose: one is an outcome, the other is a prompt to act. */
+  --color-warn: #a8620f;
+  --color-warn-bg: #fbf0df;
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -60,6 +65,9 @@
   --color-stage-hired-bg: #1e2a1b;
   --color-stage-rejected: #d99387;
   --color-stage-rejected-bg: #31201d;
+
+  --color-warn: #e0a35c;
+  --color-warn-bg: #33260f;
 }
 
 body {
