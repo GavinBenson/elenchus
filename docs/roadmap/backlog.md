@@ -342,7 +342,7 @@ list.
 - Non-admins still cannot reach the screen
 - Empty, loading, and error states are designed and reachable
 
-### PBI 6.15 — Responsive app shell
+### PBI 6.15 — [DONE] Responsive app shell
 
 **Description:** `src/app/(app)/layout.tsx` renders the sidebar as a permanent
 flex child with no responsive treatment. Below roughly 700px the main region is

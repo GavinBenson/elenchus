@@ -27,3 +27,25 @@ afterEach(async () => {
   const { cleanup } = await import('@testing-library/react')
   cleanup()
 })
+
+/**
+ * jsdom implements no layout and therefore no `window.matchMedia`, but every
+ * browser since IE10 has it — the test environment is the deficient one, so it
+ * is stubbed here rather than guarded around in component code that would
+ * never hit the missing case in production.
+ *
+ * Defaults to "not desktop". Tests that care about the breakpoint stub it
+ * themselves with the value they need.
+ */
+if (typeof window !== 'undefined' && typeof window.matchMedia !== 'function') {
+  window.matchMedia = ((query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    addListener: () => {},
+    removeListener: () => {},
+    dispatchEvent: () => false,
+  })) as unknown as typeof window.matchMedia
+}

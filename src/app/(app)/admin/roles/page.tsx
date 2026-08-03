@@ -78,7 +78,14 @@ export default async function AdminRolesPage() {
                               <span
                                 title={`${role.name} ${has ? 'has' : 'does not have'} ${permission.key}`}
                                 className={cn(
-                                  'inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold',
+                                  // `relative` is load-bearing: the sr-only
+                                  // span below is absolutely positioned, and
+                                  // without a positioned ancestor its
+                                  // containing block is the document — so the
+                                  // table's horizontal scroll container never
+                                  // clips it and cells past the fold widen the
+                                  // whole page instead.
+                                  'relative inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold',
                                   has ? 'bg-stage-hired-bg text-stage-hired' : 'bg-rail text-ink-muted'
                                 )}
                               >
