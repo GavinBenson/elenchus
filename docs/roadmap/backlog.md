@@ -111,7 +111,40 @@ interfaces exist to test against.
 
 ## Epic 3 — CI Pipeline
 
-PBIs pending.
+PBIs pending, with one already written because it constrains how the pipeline
+is built.
+
+### PBI 3.x — Regression proof: a deliberately broken branch CI fails on
+
+**Description:** A green test suite proves nothing on its own — a reader cannot
+tell a suite that catches regressions from one that asserts nothing. Maintain a
+long-lived branch, `demo/broken-stage-transition`, that is `main` plus one
+deliberate, documented defect (e.g. the stage handler stops writing
+`stageChangedAt`, or the permission check drops its override lookup). CI runs
+on it like any other branch and fails, visibly and repeatably.
+
+The bug lives only on that branch. `main` stays correct — the demo app is also
+what a reader clicks through, and a shipped bug reads as incompetence rather
+than as a demonstration.
+
+Complements the existing evidence rather than replacing it:
+[defects.md](defects.md) already shows found → triaged → fixed → verified,
+including two occasions where a test itself was vacuous and had to be
+rewritten. This PBI adds the live, re-runnable version of the same claim.
+
+**Depends on:** Epic 2 (Playwright suite) and the rest of Epic 3 — a failing
+run is only legible once there is a pipeline UI showing it.
+
+**Acceptance criteria:**
+- The branch differs from `main` by exactly one commit, whose message states
+  what was broken and why
+- CI runs on it automatically and fails; the failing job names the assertion
+  that caught the defect
+- The failure is a real assertion failure, not a build or lint error
+- `README.md` links to the failing run, so the proof is reachable without
+  cloning anything
+- A documented refresh step keeps the branch rebased on `main`, so the proof
+  does not rot into a stale-branch failure that proves nothing
 
 ## Epic 4 — Dashboard
 
