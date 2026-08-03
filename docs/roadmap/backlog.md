@@ -298,7 +298,7 @@ postings with applicant counts and an aging-offers callout.
 - Neither dashboard renders data the user lacks permission to see
 - New IDs added: `stat-tile-{key}`
 
-### PBI 6.12 — Manager and employee dashboards
+### PBI 6.12 — [DONE] Manager and employee dashboards
 **Description:** Manager gets a real reports table. Employee gets a genuine
 landing screen rather than the word "Welcome".
 **Acceptance criteria:**
