@@ -439,3 +439,39 @@ make" would have been to a component that was already correct.
   component code: every browser since IE10 has `matchMedia`, so the test
   environment is the deficient one and production code should not carry a
   branch that never executes there.
+
+## Epic 6 — PBI 6.16 (consistency sweep), 2026-08-03
+
+Every authenticated route clicked as all four roles, in light and dark, at
+390px and 1440px. Two defects found, both fixed here.
+
+- **Next's unstyled default 404 rendered inside the app shell.** No
+  `not-found.tsx` existed anywhere, so any `notFound()` — a stale bookmark, a
+  deleted record, a mistyped id — produced "This page could not be found" in
+  plain Times New Roman, wrapped in the styled sidebar. Verified by requesting
+  `/applicants/does-not-exist`. Two files now exist: one inside `(app)` that
+  keeps the navigation and offers a way back, and one at the root for an
+  unmatched URL from a logged-out visitor, deliberately standalone because
+  rendering the sidebar there would imply a session that may not exist.
+- **The pipeline board logged a hydration mismatch on every load.** dnd-kit
+  derives the `aria-describedby` it puts on every draggable card from an
+  incrementing per-instance counter; the server and the client started that
+  counter from different points, so all 46 cards hydrated with a mismatched
+  attribute and React logged an error — on the epic's hero screen. Fixed by
+  passing an explicit `id` to `DndContext`, which is what that prop is for.
+  Confirmed by console: errors before the fix, none after.
+
+### Notes from the sweep
+
+- No Epic 1 markup survives anywhere: a grep for the old `p-8`,
+  `text-2xl font-bold`, `bg-black text-white`, `text-red-600` and
+  `bg-gray-200` patterns across `src/**/*.tsx` returns nothing outside tests.
+- Permission gating re-checked per role by requesting each gated route with
+  each fixture user's cookie and grepping the response for data that role may
+  not see. Recruiter and employee get zero roster rows from `/employees`
+  and zero permission keys from `/admin/roles`; admin returns data, which
+  proves the check is not vacuous.
+- `documentElement.scrollWidth > clientWidth` is not a reliable overflow test —
+  it reported overflow on pages that could not actually be scrolled. Every
+  width check in this sweep instead attempted a scroll and asserted `scrollX`
+  did not move.

@@ -72,6 +72,8 @@ const FROZEN_TEST_IDS = [
   'nav-toggle',
   'nav-close',
   'nav-backdrop',
+  // Added by the consistency sweep (PBI 6.16).
+  'not-found-state',
 ]
 
 /**

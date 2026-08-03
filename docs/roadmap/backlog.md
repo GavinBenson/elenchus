@@ -373,7 +373,7 @@ ATS tools are.
   drawer is the chosen approach
 - Verified at 390px and at desktop, in both light and dark mode
 
-### PBI 6.16 — Consistency sweep
+### PBI 6.16 — [DONE] Consistency sweep
 **Description:** Click every route as every role, in light and dark, at mobile
 and desktop widths. Fix inconsistencies.
 **Acceptance criteria:**
