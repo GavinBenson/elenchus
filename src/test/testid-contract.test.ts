@@ -56,6 +56,14 @@ const FROZEN_TEST_IDS = [
   'error-state',
   // Added by the pipeline board (PBI 6.7).
   'board-error',
+  // Added by the admin and recruiter dashboards (PBI 6.11).
+  'stat-tile-postings',
+  'stat-tile-open-roles',
+  'stat-tile-active-candidates',
+  'stat-tile-interview',
+  'stat-tile-offers',
+  'stat-tile-employees',
+  'stat-tile-applicants',
 ]
 
 /**

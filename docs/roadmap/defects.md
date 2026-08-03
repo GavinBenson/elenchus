@@ -312,3 +312,21 @@ need it.
   covering exactly that ordering. This closes the employee half of the
   apostrophe item carried from the 6.1/6.2 review; the applicant-search half
   was closed in 6.6.
+
+## Epic 6 — PBI 6.11 (admin and recruiter dashboards), 2026-08-02
+
+- **The test-ID contract test caught a real regression, exactly as designed.**
+  `StatTile` first took the legacy ids (`stat-employee-count` and the other
+  two) through a `valueTestId` prop. They still reached the DOM, so the screen
+  worked — but `testid-contract.test.ts` scans source for the literal
+  `data-testid="..."` attribute and could no longer see them, and any future
+  refactor could have dropped them silently. Fixed by making `StatTile.value`
+  a node so the id is authored at the call site, which is the rule the design
+  doc already states: no primitive invents or hides a test id. Worth recording
+  because this is the first time the contract test has failed on a real change
+  rather than on a false positive.
+- **`stat-posting-count` was nearly repointed at a subset.** The natural
+  headline for that tile is "open roles", but the id has meant "how many job
+  postings exist" since Epic 1. It now sits on the total with open roles as the
+  hint; changing what an existing assertion measures is a silent contract
+  break even when every test still passes.
