@@ -254,7 +254,7 @@ drag-and-drop, optimistic update, and rollback on API failure.
 - The detail-page `StageControl` dropdown still works unchanged
 - New IDs added: `board-column-{stage}`, `board-card-{id}`
 
-### PBI 6.8 — Applicant detail
+### PBI 6.8 — [DONE] Applicant detail
 **Description:** Two-column detail: candidate summary, stage timeline, linked
 posting, resume link. Stage control restyled in place.
 **Acceptance criteria:**
