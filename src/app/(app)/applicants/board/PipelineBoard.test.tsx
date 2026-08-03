@@ -17,8 +17,13 @@ import type { BoardApplicant } from '@/lib/pipeline-board'
  * drop rolls the card back and surfaces the error, and a no-op drop issues no
  * request at all.
  */
-const { captured } = vi.hoisted(() => ({
+const { captured, refreshMock } = vi.hoisted(() => ({
   captured: { onDragEnd: null as ((event: DragEndEvent) => void) | null },
+  refreshMock: vi.fn(),
+}))
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ refresh: refreshMock, push: vi.fn(), replace: vi.fn() }),
 }))
 
 vi.mock('@dnd-kit/core', () => ({
@@ -78,6 +83,7 @@ const fetchMock = vi.fn()
 beforeEach(() => {
   captured.onDragEnd = null
   fetchMock.mockReset()
+  refreshMock.mockClear()
   vi.stubGlobal('fetch', fetchMock)
 })
 
@@ -122,6 +128,26 @@ describe('PipelineBoard — dropping a card', () => {
     expect(screen.getByTestId('board-column-interview')).toContainElement(
       screen.getByTestId('board-card-a1')
     )
+  })
+
+  it('revalidates server data after a successful move', async () => {
+    // Without this the list view keeps rendering the old stage from its cached
+    // server render, so the two screens disagree.
+    fetchMock.mockResolvedValue({ ok: true, json: async () => ({}) })
+    render(<PipelineBoard initialApplicants={APPLICANTS} />)
+
+    await drop('a1', 'interview')
+
+    expect(refreshMock).toHaveBeenCalled()
+  })
+
+  it('does not revalidate when the move was rejected', async () => {
+    fetchMock.mockResolvedValue({ ok: false, status: 403, json: async () => null })
+    render(<PipelineBoard initialApplicants={APPLICANTS} />)
+
+    await drop('a1', 'interview')
+
+    expect(refreshMock).not.toHaveBeenCalled()
   })
 
   it('rolls the card back to its original column when the API rejects the move', async () => {

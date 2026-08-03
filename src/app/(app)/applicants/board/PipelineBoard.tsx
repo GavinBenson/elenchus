@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import {
   DndContext,
   DragOverlay,
@@ -136,6 +137,7 @@ function Column({
 }
 
 export function PipelineBoard({ initialApplicants }: { initialApplicants: BoardApplicant[] }) {
+  const router = useRouter()
   const [applicants, setApplicants] = useState(initialApplicants)
   const [error, setError] = useState<string | null>(null)
   const [draggingId, setDraggingId] = useState<string | null>(null)
@@ -180,7 +182,13 @@ export function PipelineBoard({ initialApplicants }: { initialApplicants: BoardA
         const body = await response.json().catch(() => null)
         setApplicants(previous)
         setError(body?.error?.message ?? `Could not move that candidate (${response.status})`)
+        return
       }
+
+      // The optimistic state is now correct but the server's cached render is
+      // not, so the list view would still show the old stage. StageControl on
+      // the detail page refreshes for the same reason.
+      router.refresh()
     } catch {
       setApplicants(previous)
       setError('Could not move that candidate — the request failed.')
