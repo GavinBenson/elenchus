@@ -181,3 +181,31 @@ Found and fixed on branch `epic-6-data-foundation` before merge:
 - `prisma/seed-data/employees.ts` has `Grace O’Sullivan` with a curly
   apostrophe (U+2019), commented as a deliberate Unicode edge case. Name
   search in PBIs 6.6 / 6.10 must not exact-match a straight apostrophe.
+  **Addressed for applicant search in 6.6** (`applicantWhere` searches both
+  apostrophe spellings); still open for employee search in 6.10, which is
+  where the actual curly-apostrophe record lives.
+
+## Epic 6 — PBI 6.6 (applicants list), 2026-08-02
+
+- **Sorting the list purely by oldest-time-in-stage buried the actionable
+  rows.** The first implementation ordered by `stageChangedAt` ascending in
+  SQL, which put 40-day-old rejected and hired records at the top and pushed
+  the aging offers — the only rows carrying a deadline — down the page. Caught
+  by looking at the rendered screen, not by any test. Replaced with
+  `sortForReview()`: aging offers first (longest-outstanding first), then
+  everything else by most recent activity. Done in memory because "aging" is a
+  function of the request's clock rather than a stored column.
+
+### Found, not fixed — deferred with a reason
+
+- **The app shell does not collapse at mobile widths.** Found while verifying
+  6.6 at 390px: `src/app/(app)/layout.tsx` renders the sidebar as a permanent
+  flex child with no responsive treatment, so the main region is squeezed to
+  roughly 165px, the table clips, and the page body scrolls horizontally. Not
+  introduced by 6.6 — it is a PBI 6.5 shell gap that only became visible once a
+  screen had real content in it. Fixing it means designing a mobile nav
+  affordance (off-canvas drawer or a collapsed icon rail), which is a shell
+  decision rather than a list-screen one, so it is deferred to **PBI 6.15**,
+  whose acceptance criteria already include "no horizontal scroll or broken
+  layout at mobile widths". Every screen PBI between here and 6.15 inherits
+  the same defect.

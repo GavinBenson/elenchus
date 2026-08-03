@@ -199,7 +199,7 @@ permission-filtered nav, dark mode toggle, and the test ID contract test.
 - `testid-contract.test.ts` exists, holds the frozen ID list, and passes
 - Existing pages render inside the shell without visual rework yet
 
-### PBI 6.6 — Applicants list
+### PBI 6.6 — [DONE] Applicants list
 **Description:** Port `/applicants` to the design system: table with search,
 stage filter, role filter, days-in-stage column, and aging highlight on offers
 older than 10 days.

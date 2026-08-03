@@ -1,7 +1,10 @@
 import type { HTMLAttributes } from 'react'
 import { cn } from '@/lib/cn'
+import type { Stage } from '@/lib/applicants-query'
 
-export type Stage = 'applied' | 'interview' | 'offer' | 'hired' | 'rejected'
+// Single source of truth for the stage union lives beside the query logic that
+// validates it; re-exported here so existing `Badge`-side imports still work.
+export type { Stage }
 
 const LABELS: Record<Stage, string> = {
   applied: 'Applied',
