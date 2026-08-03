@@ -282,3 +282,13 @@ than implying a full history. A real history needs a `StageEvent` table written
 on every transition — a data-model change rather than a screen change, so it is
 out of scope here and worth its own PBI if the pipeline analytics in Epic 4
 need it.
+
+## Epic 6 — PBI 6.9 (job postings), 2026-08-02
+
+- **Closed postings sorted to the top of the list, above every open role.**
+  The query ordered by `status: 'asc'`, and the status column is a free string
+  — `"closed"` sorts before `"open"` alphabetically, so the SQL did the exact
+  opposite of what its own comment claimed. Found by looking at the rendered
+  list, where the one closed role sat above six open ones. Now partitioned in
+  memory, open first, with the reason stated at the call site so the next
+  person does not "simplify" it back into an `orderBy`.

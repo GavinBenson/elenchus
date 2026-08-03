@@ -264,7 +264,7 @@ posting, resume link. Stage control restyled in place.
 - `StageControl` behavior is unchanged; only its styling moves
 - Empty, loading, and error states are designed and reachable
 
-### PBI 6.9 — Job postings
+### PBI 6.9 — [DONE] Job postings
 **Description:** `/job-postings` list and detail adopt the design system.
 Detail shows the posting's applicant pipeline with per-stage counts.
 **Acceptance criteria:**
