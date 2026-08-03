@@ -162,17 +162,29 @@ Found and fixed on branch `epic-6-data-foundation` before merge:
 
 ### Carried tech debt — not fixed, tracked for follow-up
 
-- **There is no separate test database.** Every test file runs against
+- **There was no separate test database.** Every test file ran against
   `DATABASE_URL`, and `prisma/seed.test.ts` wipes and reseeds it mid-suite.
   This corrupted concurrently-running test files, making `npm test` fail
   differently on every run; mitigated with `fileParallelism: false` in
-  `vitest.config.ts`, which serialises test files. That is a mitigation, not
-  a cure — a running dev server, a manual `prisma db seed`, or two
-  concurrent `npm test` invocations can still corrupt a run, and every new
-  test file is now implicitly order-dependent around the reseed. **The real
-  fix is a dedicated test `DATABASE_URL` (or per-test transaction
-  rollback), and it should land before Epic 2's Playwright suite adds more
-  database-touching tests.** This is the top follow-up item for Epic 6.
+  `vitest.config.ts`, which serialises test files. That was a mitigation, not
+  a cure — a running dev server or a manual `prisma db seed` could still
+  corrupt a run.
+  **Partly fixed (2026-08-02, before PBI 6.6):** `TEST_DATABASE_URL` now
+  exists. `vitest.config.ts` overrides `DATABASE_URL` with it for the whole
+  run via `test.env`, so the destructive suite no longer touches the app
+  database. `src/test/setup.ts` throws if `TEST_DATABASE_URL` is set but the
+  override did not take, so the isolation cannot silently lapse. Verified
+  non-vacuously: with `TEST_DATABASE_URL` pointed at a bogus host, Prisma
+  reports it cannot reach that host — proving the value reaches the client
+  rather than merely being read.
+  **Residual:** when `TEST_DATABASE_URL` is unset the suite still falls back
+  to `DATABASE_URL` and destroys it (loud warning, not a hard failure — a
+  fresh checkout stays runnable). And this isolates the suite from the app,
+  not test files from each other: they still share one database within a
+  run, so `fileParallelism: false` stays, and every test file remains
+  implicitly order-dependent around the reseed. Per-test transaction
+  rollback is still the full cure, and matters more once Epic 2's Playwright
+  suite lands.
 - The destructive-seed guard keys on `NODE_ENV`; an unset `NODE_ENV` in a
   deployment gets no protection. A positive opt-in flag would be safer.
 - Rotating the fixture password now requires regenerating the bcrypt
