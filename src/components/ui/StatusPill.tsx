@@ -7,18 +7,25 @@ import { cn } from '@/lib/cn'
  * into the stage variants would make "closed" look like a sixth stage.
  */
 const TONES = {
-  open: 'bg-stage-hired-bg text-stage-hired',
-  closed: 'bg-stage-applied-bg text-ink-muted',
+  positive: 'bg-stage-hired-bg text-stage-hired',
+  neutral: 'bg-stage-applied-bg text-ink-muted',
 }
 
+/**
+ * `positive` is the caller's call because the word that means "live" differs
+ * per resource — a posting is `open`, an employee is `active` — and hardcoding
+ * one of them here would silently render the other as inactive.
+ */
 export function StatusPill({
   status,
+  positive = status === 'open',
   className = '',
   ...props
 }: {
   status: string
+  positive?: boolean
 } & HTMLAttributes<HTMLSpanElement>) {
-  const tone = status === 'open' ? TONES.open : TONES.closed
+  const tone = positive ? TONES.positive : TONES.neutral
 
   return (
     <span
@@ -33,10 +40,7 @@ export function StatusPill({
           without relying on hue alone. */}
       <span
         aria-hidden="true"
-        className={cn(
-          'h-1.5 w-1.5 rounded-full',
-          status === 'open' ? 'bg-stage-hired' : 'bg-ink-muted'
-        )}
+        className={cn('h-1.5 w-1.5 rounded-full', positive ? 'bg-stage-hired' : 'bg-ink-muted')}
       />
       {status}
     </span>
