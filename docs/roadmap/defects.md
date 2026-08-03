@@ -260,3 +260,25 @@ drag library's contract, not of this app's state machine.
 Verification note: the successful keyboard drop was confirmed end to end —
 optimistic move, `PATCH /api/applicants/:id/stage`, and the persisted
 `stage`/`stageChangedAt` read back from the API — then the seed was restored.
+
+## Epic 6 — PBI 6.8 (applicant detail), 2026-08-02
+
+- **The stage timeline claimed an applicant was still in a stage they had
+  left.** Every entry rendered "Nd in this stage", including the Applied entry
+  of someone who had since moved to Offer — so the screen said both "33d in
+  this stage (Applied)" and "11d in this stage (Offer)" at once. Only the last
+  non-terminal entry is a stage the applicant is currently in; earlier entries
+  now read "Nd ago". Found by reading the rendered screen.
+- **Stage names appeared lowercase mid-sentence** ("Moved to offer") because
+  the raw database value was interpolated. Now mapped through display labels,
+  as everywhere else in the UI.
+
+### Known limitation — recorded, not a defect
+
+The timeline is honestly two points: `appliedAt` and `stageChangedAt`. The
+schema stores no per-transition history, so the stages in between cannot be
+shown without inventing them, and the screen says so in as many words rather
+than implying a full history. A real history needs a `StageEvent` table written
+on every transition — a data-model change rather than a screen change, so it is
+out of scope here and worth its own PBI if the pipeline analytics in Epic 4
+need it.
