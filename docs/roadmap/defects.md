@@ -219,7 +219,7 @@ Found and fixed on branch `epic-6-data-foundation` before merge:
   Regression test added and confirmed non-vacuous: reverting to the closure
   read fails that test and only that test.
 
-### Found, not fixed — deferred with a reason
+### Found, not fixed — deferred with a reason (6.6)
 
 - **The app shell does not collapse at mobile widths.** Found while verifying
   6.6 at 390px: `src/app/(app)/layout.tsx` renders the sidebar as a permanent
@@ -232,3 +232,31 @@ Found and fixed on branch `epic-6-data-foundation` before merge:
   whose acceptance criteria already include "no horizontal scroll or broken
   layout at mobile widths". Every screen PBI between here and 6.15 inherits
   the same defect.
+
+## Epic 6 — PBI 6.7 (pipeline board), 2026-08-02
+
+Both defects below were found by driving the real browser, and neither could
+have been caught by the component tests as written — they are failures of the
+drag library's contract, not of this app's state machine.
+
+- **Keyboard dragging did not work, while appearing to.** `useSensor(KeyboardSensor)`
+  with dnd-kit's default coordinate getter nudges the dragged card 25px per key
+  press. Board columns are ~240px wide, so moving a card one column took about
+  ten presses and the first press looked like nothing had happened — which is
+  what "keyboard dragging works" degrades into if you accept the default. Fixed
+  with `boardKeyboardCoordinates`, which steps a whole column per press,
+  clamped at both ends rather than wrapping. Verified against a live browser:
+  one `ArrowRight` now announces `moved over droppable area interview`.
+- **The first fix was silently a no-op: wrong coordinate space.** dnd-kit's
+  `KeyboardCoordinateGetter` returns the drag's accumulated *translate*, not a
+  position on the page. The first version returned the target column's absolute
+  centre, so the card shifted a few pixels and stayed over its original column.
+  Every unit test passed, because they asserted against the same wrong model
+  the implementation used — the assertion and the bug agreed with each other.
+  Caught only by pressing the key in a real browser and reading the live-region
+  announcement. The test file now names the two spaces explicitly and covers a
+  mid-drag press where a page position and a translate give different answers.
+
+Verification note: the successful keyboard drop was confirmed end to end —
+optimistic move, `PATCH /api/applicants/:id/stage`, and the persisted
+`stage`/`stageChangedAt` read back from the API — then the seed was restored.

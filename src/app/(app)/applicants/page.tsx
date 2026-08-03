@@ -45,6 +45,14 @@ export default async function ApplicantsPage({
     <div>
       <PageHeader
         title="Applicants"
+        actions={
+          <Link
+            href="/applicants/board"
+            className="rounded-lg border border-line bg-panel px-3 py-1.5 text-sm text-ink"
+          >
+            Board view
+          </Link>
+        }
         subtitle={
           agingCount > 0
             ? `${applicants.length} shown · ${agingCount} offer${agingCount === 1 ? '' : 's'} aging past ${OFFER_AGING_DAYS} days`

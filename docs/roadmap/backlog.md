@@ -244,7 +244,7 @@ older than 10 days.
 - Empty, loading, and error states are designed and reachable
 - New IDs added: `applicants-search`, `filter-stage`, `filter-role`
 
-### PBI 6.7 — Pipeline board
+### PBI 6.7 — [DONE] Pipeline board
 **Description:** Five-column board at `/applicants/board` with dnd-kit
 drag-and-drop, optimistic update, and rollback on API failure.
 **Acceptance criteria:**
@@ -311,12 +311,27 @@ landing screen rather than the word "Welcome".
 ### PBI 6.13 — Login
 **Description:** Split-screen login treatment — it is the first screen anyone
 sees, and it sits outside the `(app)` shell.
+Includes one-click demo sign-in: a reader landing on this app cold should not
+have to find credentials to see anything. Four "Sign in as…" buttons (admin,
+recruiter, manager, employee) fill the form and submit, rather than prefilling
+a single account — same convenience, and it puts the RBAC story on the first
+screen, since each role lands on a visibly different dashboard and nav.
+
+The buttons post the seeded fixture credentials, which are already public in
+`prisma/seed.ts`, so this exposes nothing that the repository does not. They
+are gated to the fixture accounts only and must never become a generic
+"log in as any user" affordance.
+
 **Acceptance criteria:**
 - `login-form`, `login-email`, `login-password`, `login-submit`, `login-error`
   all preserved
 - The error state is visually designed, not raw text
 - Submitting shows a pending state and cannot be double-submitted
 - Renders correctly in both light and dark mode
+- Each demo button signs in as its role and lands on that role's dashboard
+- The demo buttons only ever submit fixture credentials — no arbitrary user
+- Manual login still works; the demo buttons are a shortcut, not a replacement
+- New IDs added: `demo-login-{role}`
 
 ### PBI 6.14 — Roles admin matrix
 **Description:** `/admin/roles` becomes a permission matrix instead of a bare
