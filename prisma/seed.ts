@@ -16,7 +16,7 @@ import { daysAgo, resetDayAnchor } from './seed-data/dates'
 const PASSWORD123_HASH =
   '$2b$10$LZIzbV2JQTkBZhW0RVPqQOtob7vvz/BI0DrX6SCqNhlqcWvMMA9uS'
 
-const PERMISSION_KEYS = [
+export const PERMISSION_KEYS = [
   'view_all_employees',
   'edit_employees',
   'edit_job_postings',

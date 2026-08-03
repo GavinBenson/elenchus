@@ -377,3 +377,30 @@ make" would have been to a component that was already correct.
   `TypeError` inside the submit handler instead of showing the user a message.
   Now parses defensively and falls back to the status code. Regression test
   covers a failure body that is not the expected shape.
+
+## Epic 6 — PBI 6.14 (roles matrix), 2026-08-03
+
+### Found, not fixed — belongs with Epic 7
+
+- **Moving an applicant between pipeline stages requires `delete_applicant`.**
+  `PATCH /api/applicants/{id}/stage` gates on that key, so the most routine
+  action in an ATS sits behind the most destructive-sounding permission in the
+  system. Found while writing accurate descriptions for the matrix: every
+  description was derived by grepping for the key that gates it, which is what
+  made the mismatch visible.
+
+  The consequence is visible in the matrix itself. `manager` holds
+  `edit_job_postings` and `view_all_employees` but not `delete_applicant`, so a
+  hiring manager cannot advance a candidate they are interviewing — while
+  anyone who *can* advance a candidate can also delete one outright. Neither
+  half of that is what the names imply.
+
+  Not fixed here for the same reason as the candidate-visibility gap: it is an
+  authorization change needing a new key (`move_applicant_stage` or similar),
+  a seed change, an OpenAPI update, and new tests, and Epic 2 will otherwise
+  be written against the current rules. Belongs in **Epic 7** alongside PBI 7.1.
+
+  The matrix documents the behaviour rather than hiding it — the caveat is
+  rendered on screen in the warn colour, and a test asserts the caveat
+  mentions stage changes, so if the API is ever corrected the test fails and
+  the note is removed with it.

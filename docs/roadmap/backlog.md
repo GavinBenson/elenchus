@@ -333,7 +333,7 @@ are gated to the fixture accounts only and must never become a generic
 - Manual login still works; the demo buttons are a shortcut, not a replacement
 - New IDs added: `demo-login-{role}`
 
-### PBI 6.14 — Roles admin matrix
+### PBI 6.14 — [DONE] Roles admin matrix
 **Description:** `/admin/roles` becomes a permission matrix instead of a bare
 list.
 **Acceptance criteria:**
@@ -397,6 +397,13 @@ JWT for a since-deleted user still resolving to a valid `x-user-id`, and the
 remaining unguarded Prisma calls in `auth/me`, `auth/login` and `test/reset` —
 are tracked in [defects.md](defects.md) and are candidates for this epic. They
 are not speced yet.
+
+One more, found while building the 6.14 roles matrix and also unspeced:
+**`PATCH /api/applicants/{id}/stage` gates on `delete_applicant`**, so moving a
+candidate through the pipeline requires the permission to destroy one, and
+`manager` — which lacks that key — cannot advance a candidate it is
+interviewing. It needs its own key and belongs in this epic; see
+[defects.md](defects.md) for the full note.
 
 ### PBI 7.1 — Gate candidate data behind a permission
 
