@@ -292,3 +292,21 @@ need it.
   list, where the one closed role sat above six open ones. Now partitioned in
   memory, open first, with the reason stated at the call site so the next
   person does not "simplify" it back into an `orderBy`.
+
+## Epic 6 — PBI 6.10 (employees), 2026-08-02
+
+- **A terminated employee's detail page stated a length of service that was
+  not true.** The page rendered "Tenure at departure: 4 years, 5 months", but
+  the schema records no termination date — the figure was measured from hire
+  date to *today*, so it kept growing after the person had left. Caught by
+  reading the rendered page for a seeded terminated employee. The field now
+  reads "No end date recorded" for departed staff rather than inventing a
+  departure tenure. Adding `Employee.terminatedAt` would fix it properly and
+  is a data-model change, so it is out of scope here.
+- **A naive name sort would have put `Grace O’Sullivan` after every ASCII
+  surname.** The seed carries that name with U+2019 as a deliberate Unicode
+  edge case, and `a.name < b.name` compares code points, so it sorts after
+  `Zylberberg`. The roster sorts through `Intl.Collator` instead, with a test
+  covering exactly that ordering. This closes the employee half of the
+  apostrophe item carried from the 6.1/6.2 review; the applicant-search half
+  was closed in 6.6.

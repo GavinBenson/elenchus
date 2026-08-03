@@ -274,7 +274,7 @@ Detail shows the posting's applicant pipeline with per-stage counts.
 - Permission gating behaves exactly as before
 - Empty, loading, and error states are designed and reachable
 
-### PBI 6.10 — Employees
+### PBI 6.10 — [DONE] Employees
 **Description:** `/employees` list and detail adopt the design system. Detail
 renders the manager/reports hierarchy, which is in the schema but currently
 invisible in the UI.
