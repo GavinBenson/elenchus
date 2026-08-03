@@ -367,3 +367,13 @@ awaits `POST /api/auth/logout` before `router.push`, and the assertions were
 being read before that round trip finished. Given ~1.5s it lands on `/login`
 with `GET /api/auth/me` returning 401. Recorded because "the fix I was about to
 make" would have been to a component that was already correct.
+
+## Epic 6 — PBI 6.13 (login), 2026-08-02
+
+- **A failed sign-in could throw a second, uglier error on top of the first.**
+  The handler read `body.error.message` straight off the parsed response, so
+  any failure that did not return the standard `{ error: { code, message } }`
+  envelope — a proxy error page, a 502, anything non-JSON — threw a
+  `TypeError` inside the submit handler instead of showing the user a message.
+  Now parses defensively and falls back to the status code. Regression test
+  covers a failure body that is not the expected shape.
