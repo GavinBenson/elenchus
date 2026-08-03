@@ -286,7 +286,7 @@ invisible in the UI.
 - `view_all_employees` gating behaves exactly as before
 - Empty, loading, and error states are designed and reachable
 
-### PBI 6.11 — Admin and recruiter dashboards
+### PBI 6.11 — [DONE] Admin and recruiter dashboards
 **Description:** Admin gets the tile row (open roles, active candidates, in
 interview, offers out) plus a stage-distribution bar. Recruiter gets open
 postings with applicant counts and an aging-offers callout.
