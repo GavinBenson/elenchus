@@ -381,3 +381,68 @@ and desktop widths. Fix inconsistencies.
 - No horizontal scroll or broken layout at mobile widths
 - `testid-contract.test.ts` passes — no test ID lost across the epic
 - `npm test` and `npm run build` clean
+
+## Epic 7 — Authorization Hardening
+
+Added 2026-08-02. Epic 1 built the permission engine and Epic 6 exercised it
+from four roles' points of view, which is what exposed the gap below: the
+engine is sound, but not every resource is actually behind it.
+
+Sequencing: 7.1 should land before Epic 2 writes Playwright tests against the
+current rules, since changing an authorization boundary afterwards means
+rewriting those tests.
+
+Other carried security items — the session cookie's missing `Secure` flag, a
+JWT for a since-deleted user still resolving to a valid `x-user-id`, and the
+remaining unguarded Prisma calls in `auth/me`, `auth/login` and `test/reset` —
+are tracked in [defects.md](defects.md) and are candidates for this epic. They
+are not speced yet.
+
+### PBI 7.1 — Gate candidate data behind a permission
+
+**Description:** Candidate PII is currently readable by every authenticated
+user. The `employee` role is seeded with an empty permission set, and logged in
+as `employee@elenchus.test` the `/applicants` list renders all 46 candidates
+with names, email addresses, stages and days-in-stage. `/applicants/{id}`,
+`/applicants/board` and the pipelines on `/job-postings/{id}` are equally open,
+because those routes and `GET /api/applicants` gate on `requireSession` alone.
+
+Found during PBI 6.12 while building the zero-permission employee dashboard —
+that screen had to be assembled only from what an employee is entitled to,
+which made the contrast obvious.
+
+This is by construction rather than a bug in any one screen. Real ATS products
+restrict candidate data to recruiters and hiring managers on the specific
+requisition. Compare `/employees`, which correctly requires
+`view_all_employees` — a permission that was itself found dead in the Epic 1
+review for the same class of reason.
+
+Introduce a `view_applicants` permission key, granted to `admin` and
+`recruiter`. **Whether `manager` receives it is the open product question** and
+should be decided explicitly rather than by default: granting it org-wide is
+simple but wrong for a real ATS; scoping it to requisitions a manager owns
+needs a link between `JobPosting` and a hiring manager, which the schema does
+not have today. Recommendation: grant to `admin` and `recruiter` only in 7.1,
+and treat per-requisition scoping as a separate PBI if it is wanted.
+
+Write-side permissions are out of scope — `edit_job_postings` and
+`delete_applicant` already gate mutations, and this PBI is about read access.
+
+**Acceptance criteria:**
+- `view_applicants` exists as a seeded permission, granted to `admin` and
+  `recruiter`, and the seed remains deterministic
+- `GET /api/applicants` and `GET /api/applicants/{id}` return 403 without it
+  and 200 with it; unauthenticated still returns 401
+- `/applicants`, `/applicants/board` and `/applicants/{id}` redirect a user
+  without it to `/dashboard`, matching how `/employees` already behaves
+- The applicant pipeline on `/job-postings/{id}` is hidden from a user without
+  it, while the posting itself remains visible — a posting is not candidate data
+- The Applicants nav link is not rendered for a user without it, so navigation
+  stays a projection of effective permissions
+- The recruiter and admin dashboards are unaffected; the employee dashboard
+  still renders, since it reads no candidate data
+- OpenAPI spec updated to document the new 403 paths
+- Tests cover 401 / 403 / 200 on both API routes and the redirect on the page
+  routes, in the style of the existing `view_all_employees` coverage
+- `testid-contract.test.ts` still passes — a hidden pipeline must not drop a
+  frozen id from a screen that still renders it
