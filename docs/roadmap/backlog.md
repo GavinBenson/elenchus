@@ -342,7 +342,38 @@ list.
 - Non-admins still cannot reach the screen
 - Empty, loading, and error states are designed and reachable
 
-### PBI 6.15 — Consistency sweep
+### PBI 6.15 — Responsive app shell
+
+**Description:** `src/app/(app)/layout.tsx` renders the sidebar as a permanent
+flex child with no responsive treatment. Below roughly 700px the main region is
+squeezed to around 165px, tables clip, and the page body scrolls horizontally.
+Found while verifying 6.6 at 390px and inherited by every screen PBI since.
+
+Split out of the 6.16 sweep because it is not a sweep item. Fixing it means
+choosing and building a mobile navigation affordance — an off-canvas drawer
+behind a menu button, or a collapsed icon-only rail — which is a shell design
+decision, and every screen inherits whatever is chosen. A sweep that also has
+to design the navigation is not a sweep.
+
+This is not the mobile-first redesign the design doc puts out of scope. The bar
+stays "nothing breaks at mobile widths"; the app remains desktop-first, as real
+ATS tools are.
+
+**Acceptance criteria:**
+- No route scrolls the page body horizontally at 390px
+- Every nav destination is reachable at mobile widths, and the current route is
+  still indicated
+- The sidebar is unchanged at desktop widths — this adds a breakpoint, it does
+  not redesign the desktop shell
+- Dark mode toggle and sign-out remain reachable in the mobile treatment
+- `app-sidebar`, `nav-link-{section}`, `theme-toggle`, `user-menu` and
+  `logout-button` all still resolve at both widths, since Epic 2 will assert
+  against them at whatever viewport it runs
+- Focus is trapped in the drawer while it is open, and Escape closes it, if a
+  drawer is the chosen approach
+- Verified at 390px and at desktop, in both light and dark mode
+
+### PBI 6.16 — Consistency sweep
 **Description:** Click every route as every role, in light and dark, at mobile
 and desktop widths. Fix inconsistencies.
 **Acceptance criteria:**

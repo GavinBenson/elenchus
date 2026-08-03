@@ -159,7 +159,9 @@ rejected`. The board is five columns, two of them terminal.
 
 ## PBIs
 
-Fifteen PBIs in four bands. Full descriptions and acceptance criteria live in
+Sixteen PBIs in five bands — originally fifteen in four; the responsive shell
+was split out of the sweep during implementation. Full descriptions and
+acceptance criteria live in
 [backlog.md](../../roadmap/backlog.md); this section covers the shape and the
 sequencing logic.
 
@@ -200,7 +202,13 @@ Applicants comes first among the screens because it is the epic's hero flow and
 the densest use of the primitives — problems with the design system surface
 there or nowhere.
 
-**Sweep (6.15)** — click every route in every role, in light and dark, at
+**Responsive shell (6.15)** — added 2026-08-02, after 6.6 exposed that the
+sidebar never collapses and squeezes the main region to ~165px at 390px. It was
+originally folded into the sweep, but choosing and building a mobile navigation
+affordance is a shell design decision that every screen inherits, and a sweep
+that also has to design the navigation is not a sweep.
+
+**Sweep (6.16)** — click every route in every role, in light and dark, at
 mobile and desktop widths. An explicit PBI because the epic's success criterion
 is a click-around test, and that is only verifiable once every screen exists.
 
@@ -244,7 +252,7 @@ Vitest:
 - The test-ID contract test above.
 - `npm run build` clean on every PBI.
 
-Not covered automatically: whether it looks good. That is the 6.15 manual sweep,
+Not covered automatically: whether it looks good. That is the 6.16 manual sweep,
 and dark mode doubles it.
 
 ## Risks
@@ -261,7 +269,7 @@ from its first screen risks building the wrong abstractions. Mitigated by
 scoping 6.4 to what the epic's screens actually need and accepting that later
 screen PBIs may revise a primitive — the component tests make that safe.
 
-**Half-migrated app between 6.5 and 6.15.** The shell lands before the screens
+**Half-migrated app between 6.5 and 6.16.** The shell lands before the screens
 are restyled, so for several PBIs the app has good navigation wrapped around
 unstyled pages. Acceptable because each PBI is still individually shippable and
 nothing is broken, but the app should not be demoed mid-epic.
@@ -271,8 +279,9 @@ Epic 2 test surface — but every screen PBI's acceptance includes both modes.
 
 ## Out of scope
 
-- Mobile-first redesign. Screens must not break at mobile widths (checked in
-  6.15), but the app is designed for desktop, as real ATS tools are.
+- Mobile-first redesign. Screens must not break at mobile widths (the shell is
+  made responsive in 6.15, and every route is checked in 6.16), but the app is
+  designed for desktop, as real ATS tools are.
 - Animation and transitions beyond basic hover and focus states.
 - Any change to the API surface other than `stageChangedAt`.
 - Replacing the fixture users or their records — they are an Epic 2 contract.
