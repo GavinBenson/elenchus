@@ -330,3 +330,40 @@ need it.
   postings exist" since Epic 1. It now sits on the total with open roles as the
   hint; changing what an existing assertion measures is a silent contract
   break even when every test still passes.
+
+## Epic 6 — PBI 6.12 (manager and employee dashboards), 2026-08-02
+
+### Found, not fixed — needs a product decision
+
+- **Candidate PII is visible to every authenticated user, including roles with
+  zero permissions.** Noticed while building the employee dashboard, which had
+  to be assembled only from things an employee is entitled to. Logged in as
+  `employee@elenchus.test` (the `employee` role is seeded with an empty
+  permission set), `/applicants` renders all 46 candidates with names, email
+  addresses, stages, and days-in-stage; `/applicants/{id}` and
+  `/job-postings/{id}` are equally open. Both page routes and the underlying
+  `GET /api/applicants` gate on `requireSession` alone, so this is by
+  construction rather than by a bug in a screen.
+
+  Real ATS products do not do this — candidate data is normally restricted to
+  recruiters and hiring managers on the specific requisition. Compare
+  `/employees`, which correctly requires `view_all_employees`, and note that
+  `view_all_employees` was itself found dead in the Epic 1 review for the same
+  class of reason.
+
+  **Not fixed here.** A screen PBI is the wrong place to change an
+  authorisation boundary: it would alter documented API behaviour, need the
+  OpenAPI spec updated, and break any Epic 2 test written against today's
+  rules. It needs a deliberate decision about which roles may see candidates,
+  and probably a new permission key such as `view_applicants`, granted to
+  admin and recruiter — and to manager only if hiring managers are meant to
+  see their own requisitions.
+
+### Verification note
+
+The sign-out button appeared broken during this PBI's browser checks — clicking
+it left the session valid and the URL unchanged. It is not broken: the handler
+awaits `POST /api/auth/logout` before `router.push`, and the assertions were
+being read before that round trip finished. Given ~1.5s it lands on `/login`
+with `GET /api/auth/me` returning 401. Recorded because "the fix I was about to
+make" would have been to a component that was already correct.

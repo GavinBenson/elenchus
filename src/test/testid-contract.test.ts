@@ -64,6 +64,10 @@ const FROZEN_TEST_IDS = [
   'stat-tile-offers',
   'stat-tile-employees',
   'stat-tile-applicants',
+  // Added by the manager dashboard (PBI 6.12).
+  'stat-tile-reports',
+  'stat-tile-org-size',
+  'stat-tile-tenure',
 ]
 
 /**
