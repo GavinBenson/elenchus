@@ -404,3 +404,38 @@ make" would have been to a component that was already correct.
   rendered on screen in the warn colour, and a test asserts the caveat
   mentions stage changes, so if the API is ever corrected the test fails and
   the note is removed with it.
+
+## Epic 6 — PBI 6.15 (responsive app shell), 2026-08-03
+
+- **The shell defect carried since 6.6 is fixed.** Below `lg` the sidebar is
+  now an off-canvas drawer behind a menu button; at `lg` and above it is the
+  same static rail as before, unchanged. One `<nav>` instance serves both, so
+  no selector matches twice.
+- **`sr-only` inside a horizontal scroll container widened the whole page.**
+  Found while sweeping routes at 390px: `/admin/roles` still scrolled
+  horizontally by 144px even though the table's `overflow-x-auto` wrapper was
+  containing the table correctly (342px visible, 618px scrollable), and no
+  element's bounding box exceeded the viewport outside a scroll container.
+  Bisected by hiding elements one at a time until the overflow disappeared.
+
+  Cause: Tailwind's `sr-only` is `position: absolute`, and the matrix cells had
+  no positioned ancestor — so each hidden "granted"/"not granted" label's
+  containing block was the document, not the scrolling wrapper. Labels in
+  columns past the fold sat at x=519 and the page grew to match. The scroll
+  container could not clip them because it was never in their containing-block
+  chain.
+
+  Fixed by adding `relative` to the cell badge. The comment at the call site
+  says why, because it looks like a decorative class and would be an easy
+  "cleanup" for someone later. This is the only `sr-only` inside a scroll
+  container in the codebase — checked.
+- **A `setState` inside an effect keyed on the pathname was closing the
+  drawer.** Lint rejected it as a cascading render, correctly: navigating is an
+  event, not something to observe after the fact. The drawer now closes in the
+  nav link's own `onClick`.
+- **jsdom has no `window.matchMedia`,** which the drawer needs to know which
+  side of the breakpoint it is on, and adding it broke all six pre-existing
+  sidebar tests. Stubbed in `src/test/setup.ts` rather than guarded around in
+  component code: every browser since IE10 has `matchMedia`, so the test
+  environment is the deficient one and production code should not carry a
+  branch that never executes there.

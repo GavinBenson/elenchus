@@ -68,6 +68,10 @@ const FROZEN_TEST_IDS = [
   'stat-tile-reports',
   'stat-tile-org-size',
   'stat-tile-tenure',
+  // Added by the responsive shell (PBI 6.15).
+  'nav-toggle',
+  'nav-close',
+  'nav-backdrop',
 ]
 
 /**

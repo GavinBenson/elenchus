@@ -21,7 +21,10 @@ export default async function AppLayout({
         userEmail={user.email}
         roleName={user.role.name}
       />
-      <main className="min-w-0 flex-1 px-6 py-5">{children}</main>
+      {/* pt-16 clears the fixed mobile top bar; at lg the bar is gone and the
+          original padding applies. min-w-0 keeps a wide table inside its own
+          scroll container instead of stretching this flex child. */}
+      <main className="min-w-0 flex-1 px-4 pb-5 pt-16 sm:px-6 lg:pt-5">{children}</main>
     </div>
   )
 }
